@@ -39,7 +39,7 @@ head(data_1)
 str(data_1) 
 ```
 
-#### 1.1 Find the correlation matrix and covariance matrix of the data in Table 1.1
+#### 1.1: *Find the correlation matrix and covariance matrix of the data in Table 1.1*
 
 Note: I subset the data to remove the categorical variables like sex
 ```{r}
@@ -49,7 +49,6 @@ health_subset <- data_1 %>%
 # covariance matrix
 cov(health_subset) 
 
-
 ```
 
 Correlation matrix 
@@ -58,11 +57,64 @@ cor(health_subset)
 ```
 
 
-#### 1.2 Fill in the missing values in Table 1.1 with appropriate mean values, and recalculate the correlation matrix of the data
+#### 1.2: *Fill in the missing values in Table 1.1 with appropriate mean values, and recalculate the correlation matrix of the data*
+
+To estimate the means
 
 ```{r}
-# \
+# subset the df to identify instances where value = NA
+# then, use the mean() function to fill in the missing value 
+
+# age: 
+health_subset$age[is.na(health_subset$age)]<-mean(health_subset$age,na.rm=TRUE)
+# IQ 
+health_subset$IQ[is.na(health_subset$IQ)]<-mean(health_subset$IQ,na.rm=TRUE)
+
+# eeight 
+health_subset$weight[is.na(health_subset$weight)]<-mean(health_subset$weight,na.rm=TRUE)
 ```
+
+Now I can recalculate the correlation matrix for the data 
+
+```{r}
+cor(health_subset) 
+
+```
+
+
+#### *1.3: Examine both the normal probability plots of each variable in the archaeology data in Table 1.3 and the chi-square plot of the data. Do the plots suggest anything unusual about the data?* 
+
+```{r}
+# load the archaeology data from Table 1.3 from the HSAUR2 package 
+data("pottery", package = "HSAUR2")
+head(pottery) 
+```
+
+
+Normal probability plots 
+```{r}
+# first I remove kiln, which is stored as a categorical variable (factor type) in R
+pottery_1 = pottery %>% select(-kiln)
+layout(matrix(1:9, nc = 3))
+sapply(colnames(pottery_1), function(x){ 
+  qqnorm(pottery_1[[x]], main = x)
+  qqline(pottery_1[[x]])
+  })
+```
+
+[insert comment]
+
+Chi-square plot of the data 
+```{r}
+
+```
+
+
+
+
+
+
+
 
 
 
