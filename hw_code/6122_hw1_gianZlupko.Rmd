@@ -38,6 +38,10 @@ head(data_1)
 # check the data types in the data
 str(data_1) 
 ```
+ 
+n = 10 
+q = 7 
+
 
 #### 1.1: *Find the correlation matrix and covariance matrix of the data in Table 1.1*
 
@@ -78,7 +82,6 @@ Now I can recalculate the correlation matrix for the data
 
 ```{r}
 cor(health_subset) 
-
 ```
 
 
@@ -89,7 +92,7 @@ cor(health_subset)
 data("pottery", package = "HSAUR2")
 head(pottery) 
 ```
-
+Note: Kiln is nominal.
 
 Normal probability plots 
 ```{r}
