@@ -1,0 +1,47 @@
+---
+title: "hudm6122_hw2"
+author: "Gian Zlupko"
+date: "2023-02-06"
+output: html_document
+---
+
+Assignment: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6 
+
+
+
+Libraires Used 
+```{r}
+
+```
+
+
+
+#### *Ex. 2.1 Use the bivariate boxplot on the scatterplot of each pair of variables in the air pollution data to identify any outliers. Calculate the correlation between each pair of variables using all the data and the data with any identified outliers removed. Comment on the results.* 
+
+```{r}
+
+```
+
+
+
+
+#### *Ex.2.2 Compare the chi-plots with the corresponding scatterplots for each pair of variables in the air pollution data. Do you think that there is any advantage in the former?*
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

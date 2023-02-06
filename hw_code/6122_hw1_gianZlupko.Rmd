@@ -6,20 +6,14 @@ output: html_document
 ---
 ###  HW 1 
 
-Assignment: 
-* Solve with R the five exercises from Chapter 1.8, pages 23-24:
-* 1.1, 1.2, 1.3, 1.4, 1.5
-
-
-Libaries Used
-```{r, warning = FALSE, output = FALSE}
-library(tidyverse) 
-```
-
+* Assignment: 
+  * Solve with R the five exercises from Chapter 1.8, pages 23-24:
+  * 1.1, 1.2, 1.3, 1.4, 1.5
 
 
 Load data set for Table 1.1
-```{r}
+```{r, warning = FALSE, message = FALSE}
+library(tidyverse)
 data_1 <-
   structure(list(individual = 1:10, sex = structure(c(2L, 2L, 2L,
     2L, 2L, 1L, 1L, 1L, 1L, 1L), .Label = c("Female", "Male"), class = "factor"),
@@ -39,20 +33,15 @@ head(data_1)
 str(data_1) 
 ```
  
-n = 10 
-q = 7 
-
-
 #### 1.1: *Find the correlation matrix and covariance matrix of the data in Table 1.1*
 
-Note: I subset the data to remove the categorical variables like sex
+Note: Prior to generating the matrices, I subset the data to remove the categorical variables like sex. 
 ```{r}
 health_subset <- data_1 %>% 
   select(-c(sex, depression, health))   
 
 # covariance matrix
 cov(health_subset) 
-
 ```
 
 Correlation matrix 
@@ -63,8 +52,8 @@ cor(health_subset)
 
 #### 1.2: *Fill in the missing values in Table 1.1 with appropriate mean values, and recalculate the correlation matrix of the data*
 
-To estimate the means
 
+In the code below, I fill in missing values within each column with the means obtained from each respective column. 
 ```{r}
 # subset the df to identify instances where value = NA
 # then, use the mean() function to fill in the missing value 
@@ -74,7 +63,7 @@ health_subset$age[is.na(health_subset$age)]<-mean(health_subset$age,na.rm=TRUE)
 # IQ 
 health_subset$IQ[is.na(health_subset$IQ)]<-mean(health_subset$IQ,na.rm=TRUE)
 
-# eeight 
+# weight 
 health_subset$weight[is.na(health_subset$weight)]<-mean(health_subset$weight,na.rm=TRUE)
 ```
 
@@ -96,7 +85,7 @@ head(pottery)
 ```
 Note: Kiln is nominal.
 
-Normal probability plots 
+First, I generate normal probability plots to inspect univariate normality for each variable. 
 ```{r}
 # first I remove kiln, which is stored as a categorical variable (factor type) in R
 pottery_1 = pottery %>% select(-kiln)
@@ -107,9 +96,9 @@ sapply(colnames(pottery_1), function(x){
   })
 ```
 
-Visual inspection of the chi-square plots suggest that the majority of the variables deviate from linearity. For example, in the plots above, BaO and Na2O appear to be the only two variables in the data set that follow normal distributions. In addition, many of the variables show evidence of outliers. Outliers are especially pronounced in the variables TiO2 and Na2O. 
+Visual inspection of the probability plots suggests that the majority of the variables deviate from linearity. For example, in the plots above, BaO and Na2O appear to be the only two variables in the data set that follow normal distributions. In addition, many of the variables show evidence of outliers. Outliers are especially pronounced in the variables TiO2 and Na2O. 
 
-Next, I inspect 
+Next, I inspect a chi-square plot of the data using ordered distances.
 
 Chi-square plot of the data 
 ```{r}
@@ -117,9 +106,10 @@ x <- pottery_1
 cm <- colMeans(x)
 S <- cov(x)
 
+# calculate distances for each observation from the mean vector of the full sample 
 d <- apply(x, 1, function(x) t(x - cm) %*% solve(S) %*% (x - cm))
 
-
+# plot the sorted distances 
 plot(qc <- qchisq((1:nrow(x) - 1/2) / nrow(x), df = 7), 
      sd <- sort(d),
      xlab = expression(paste(chi[7]^2, " Quantile")), 
@@ -132,31 +122,29 @@ abline(a = 0, b = 1)
 The chi-square plot shows that the ordered distances do not fall on the straight line. These results may suggest that the observations do not arise from a multivariate normal distribution. In addition, there appear to be multiple outliers that have greater distance values from the mean vector. 
 
 
-
+#### *1.4: Convert the covariance matrix given below into the corresponding correlation matrix* 
 
 ```{r}
-###################################################
-### Exercise 1.4
-###################################################
-s <- c(3.8778,
-       2.8110,  2.1210,
-       3.1480,  2.2669,  2.6550,
-       3.5062,  2.5690,  2.8341,   3.2352)
-S <- diag(4)
-S[!lower.tri(S)] <- s
-S <- S + t(S)
-diag(S) <- diag(S) / 2
+
+mat_1 <- matrix(c(3.778, 2.8110, 3.140, 3.5062, 
+         2.8110, 2.1210, 2.669, 2.5690,
+         3.1480, 2.2669, 2.6550, 2.8341,
+         3.5062, 2.5690, 2.8341, 3.2352), 
+       nrow = 4, ncol = 4)
+
+# use the cov2cor() function to convert the covariance matrix to a correlation matrix 
+cor_mat1 <- cov2cor(mat_1) 
+round(cor_mat1, 2) 
+
+
 ```
 
 
 
-
+#### *1.5: For the small set of (10 × 5) multivariate data given below, i) find the (10 × 10) Euclidean distance matrix for the rows of the matrix. An alternative to Euclidean distance that might be used in some cases is what is known as city block distance (think New York). ii) Write some R code to calculate the city block distance matrix for the data.* 
 
 ```{r}
-###################################################
-### Exercise 1.5
-###################################################
-X <- matrix(
+mat2 <- matrix(
  c(3, 4, 4, 6, 1,
    5, 1, 1, 7, 3,
    6, 2, 0, 2, 6,
@@ -168,8 +156,16 @@ X <- matrix(
    7, 6, 5, 1, 4,
    2, 1, 4, 3, 1), ncol = 5)
 
+# calcuate Euclidean distance using the dist() function
+dist(mat2, method = "euclidean")
+
 ```
 
+ii) distance matrix using city block (or 'Manhattan') distance
+```{r}
+# calculate distance using city block or Manhattan distance 
+dist(mat2, method = "manhattan")
+```
 
 
 
