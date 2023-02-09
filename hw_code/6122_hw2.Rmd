@@ -8,9 +8,11 @@ output: html_document
 Assignment: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6 
 
 
-Libraires Used 
-```{r}
-
+Libraries Used 
+```{r, message = FALSE}
+library(HSAUR2) 
+library(tidyverse)
+library(lattice)
 ```
 
 
@@ -18,31 +20,131 @@ Libraires Used
 #### *Ex. 2.1 Use the bivariate boxplot on the scatterplot of each pair of variables in the air pollution data to identify any outliers. Calculate the correlation between each pair of variables using all the data and the data with any identified outliers removed. Comment on the results.* 
 
 ```{r}
+data("USairpollution", package = "HSAUR2")
+pollution <- USairpollution
+head(pollution) 
+```
 
+Scatterplot and boxplot on the pollution data
+```{r}
+
+mlab <- "Manufacturing enterprises with 20 or more workers" 
+plab <- "Population size (1970 census) in thousands"
+
+layout(matrix(c(2,0,1,3), nrow = 2, byrow = TRUE),
+       widths = c(2,1), heights = c(1,2), respect = TRUE)
+
+xlim <- with(pollution, range(manu)) * 1.1
+
+plot(popul ~ manu, data = pollution, cex.lab = 0.9, 
+     xlab = mlab, ylab = plab, type = "n", xlim = xlim)
+
+with(pollution, text(manu, popul, cex = 0.6, 
+                     labels = abbreviate(row.names(pollution))))
+
+with(pollution, boxplot(popul))
 ```
 
 
+
+
+Correlation coefficients with all of the data
+```{r}
+cor_full <- cor(pollution) 
+round(cor_full, 2) 
+```
+
+Correlation coefficients with outliers removed 
+
+```{r}
+replace_outliers <- function(pollution){
+   pollution %>%          
+           map_if(is.numeric, ~ replace(.x, .x %in% boxplot.stats(.x)$out, NA)) %>%
+           bind_cols 
+}
+
+# now, return a subset of the original data without the outliers 
+pollution_clean <- na.omit(replace_outliers(pollution)) 
+
+# now calculate the updated correlation coefficients 
+new_cor <- cor(pollution_clean)
+round(new_cor, 2)
+
+```
+
+Removing outliers increased the strength of the correlation coefficients for most of the bivariate relationships in the data set, which was expected as outliers are known to weaken correlations. 
 
 
 #### *Ex.2.2 Compare the chi-plots with the corresponding scatterplots for each pair of variables in the air pollution data. Do you think that there is any advantage in the former?*
 
+First I inspect the chi-square plots for the pollution data. Note, the original pollution data set has 7 variables which created issues when generating a plotting matrix to visualize the chi-square plots as it was not divisible by a column number for the plotting matrix. Therefore, for the sake of addressing this question, I dropped one column from the original pollution data set and plotted the chi-square plots using a subset of the data. 
 ```{r}
+# drop one column so that I can plot the chi-square plot matrix 
+pol_1 <- pollution %>% select(-wind) 
+
+# plot the chi-square plots
+layout(matrix(1:6, nc = 2))
+sapply(colnames(pol_1), function(x){ 
+  qqnorm(pol_1[[x]], main = x)
+  qqline(pol_1[[x]])
+  })
 
 ```
+
+Next, I compare the chi-square plots to the scatter plots for each pair of variables in the data set. 
+
+```{r}
+pairs(pol_1, pch = ".", cex = 1.5) 
+```
+
+In regards to question 2.2, I do believe that there are two advantages that are gained when using the chi-square plots over the scatter plots. First, one can more readily visualize outliers in the chi-square plots compared to the scatter plots. A second advantage of the chi-square plots is that it is easier to see instances where there is heteroscedasticity; that is, where the variance in a variable is not equal. 
+
 
 
 #### *Ex. 2.3 Construct a scatterplot matrix of the body measurements data that has the appropriate boxplot on the diagonal panels and bivariate boxplots on the other panels. Compare the plot with Figure 2.17, and say which diagram you find more informative about the data.*
 
 ```{r}
+# load the body measures data
+measure <-
+  structure(list(V1 = 1:20, V2 = c(34L, 37L, 38L, 36L, 38L, 43L,
+                 40L, 38L, 40L, 41L, 36L, 36L, 34L, 33L, 36L, 37L, 34L, 36L, 38L,
+                 35L), V3 = c(30L, 32L, 30L, 33L, 29L, 32L, 33L, 30L, 30L, 32L,
+                 24L, 25L, 24L, 22L, 26L, 26L, 25L, 26L, 28L, 23L), V4 = c(32L,
+                 37L, 36L, 39L, 33L, 38L, 42L, 40L, 37L, 39L, 35L, 37L, 37L, 34L,
+                 38L, 37L, 38L, 37L, 40L, 35L)), .Names = c("V1", "V2", "V3",
+                 "V4"), class = "data.frame", row.names = c(NA, -20L))
+measure <- measure[,-1]
+names(measure) <- c("chest", "waist", "hips")
+measure$gender <- gl(2, 10)
+levels(measure$gender) <- c("male", "female")
+
+head(measure) 
 
 ```
+
+```{r}
+library(lattice)
+
+bwplot(chest ~  hips + waist | gender, 
+       data = measure,
+       groups = chest + waist + hips,
+       layout = c(2,2), 
+       do.out = FALSE,
+       outer = TRUE,
+       main = "measurement boxplots") 
+       
+```
+
+I find the figure 2.17 more informative because in figure 2.17 we also see the univariate distribution of each individual variable. By contrast, the boxplots show us the spread but do not indicate whether the distribution is normal. 
 
 
 #### *Ex. 2.4 Construct a further scatterplot matrix of the body measurements data that labels each point in a panel with the gender of the individual, and plot on each scatterplot the separate estimated bivariate densities for men and women.*
 
 
 ```{r}
-
+library(lattice)
+measure 
+splom(measure[c(1,2,3)], groups = measure$gender)  
 ```
 
 
@@ -50,12 +152,24 @@ Libraires Used
 
 
 ```{r}
-
+# load the pottery data 
+data("pottery", package = "HSAUR2")
+head(pottery) 
+splom(pottery, group = pottery$kiln)
 ```
+The plot shows that there are different clusters of values for the bivariate relationships at each level of kiln. 
+
 
 #### *Ex. 2.6 Construct a bubble plot of the earthquake data using latitude and longitude as the scatterplot and depth as the circles, with greater depths giving smaller circles. In addition, divide the magnitudes into three equal ranges and label the points in your bubble plot with a different symbol depending on the magnitude group into which the point falls.*
 
 ```{r}
+# load the earthquake data 
+data("quakes", package="datasets")
+library(KernSmooth) 
+
+# plot the scatterplot 
+plot(x = quakes$lat, y = quakes$long, col = cut(quakes$mag, breaks = 3)) 
+symbols(x = quakes$lat, y = quakes$long, circles = quakes$depth, inches = 0.15, add = TRUE)
 
 ```
 
