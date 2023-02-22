@@ -1,0 +1,144 @@
+---
+title: "hw3"
+author: "Gian Zlupko"
+date: "2023-02-20"
+output: html_document
+---
+
+### HUDM 6122 Multivariate  
+#### HW3 
+
+
+Libraries Used
+```{r, message = F, warning = F}
+library(tidyverse)
+library(HSAUR) # hepthalon data 
+library(HSAUR2) # air pollution data 
+
+```
+
+
+
+
+#### Ex. 3.1 *Construct the scatterplot of the heptathlon data showing the contours of the estimated bivariate density function on each panel. Is this graphic more useful than the unenhanced scatterplot matrix?*
+
+```{r}
+data("heptathlon") 
+# inspect data 
+head(heptathlon) 
+
+```
+
+
+```{r}
+
+```
+
+
+
+
+
+
+#### Ex. 3.2 *Construct a diagram that shows the SO2 variable in the air pollution data plotted against each of the six explanatory variables, and in each of the scatterplots show the fitted linear regression and a fitted locally weighted regression. Does this diagram help in deciding on the most appropriate model for determining the variables most predictive of sulphur dioxide levels?*
+
+```{r}
+
+data("USairpollution", package = "HSAUR2")
+pollution <- USairpollution
+head(pollution) 
+
+# linear reg plotted in red; locally fitted reg in blue
+pairs(pollution, 
+      panel = function(x, y) { 
+        
+        points(x, y)
+        abline(lm(y ~ x), col = "red")
+        lines(stats::lowess(x, y))
+        })
+
+```
+
+The scatterplot with the linear and locally fit regression models for each pairs shows that there are predictor variables that appear to be moderately correlated with SO2, such as 'manu' and 'temp'. However, there are discrepancies between the linear regression line and the locally fitted line in most of the bivariate relationships shown with SO2, including 'manu' and 'temp', suggesting that the relationship between these variables and SO2 may be more complex than a simple linear fitted line may indicate.
+
+
+
+#### Ex. 3.3 *Find the principal components of the following correlation matrix given by MacDonnell (1902) from measurements of seven physical characteristics in each of 3000 convicted criminals:*
+```{r}
+
+# read in corr matrix 
+crim_cor <- matrix(c(1.000, 0.402, 1.000, 0.396, 0.618, 1.000,0.301, 0.150, 0.321, 1.000, 
+0.305, 0.135, 0.289, 0.846, 1.000, 0.339, 0.206, 0.363, 0.759, 0.797, 1.000, 0.340, 0.183, 0.345, 0.661, 0.800, 0.736, 1.000), nrow = 7 , ncol = 7)
+crim_cor 
+
+# use PCA on the corr matrix 
+
+crim_pca <- princomp(crim_cor, cor = TRUE)
+summary(crim_pca) 
+
+```
+
+
+#### *How would you interpret the derived components?*
+
+Results from PCA indicated that the first two principal components accounted for 70% of the variance in the original seven varaibles. The third principal component accounted for an additional 24% of the variation in the original data and, collectively, three components represented nearly 95% of the overall variance in the original seven variables. These findings indicate that two or three components (depending on how much of the original variance a researcher would want to capture) would effectively summarize the original variance in the data set. Moreover, we can look back at the correlation matrix and identify potential combinations of the original variables that are likely underlying the components. For example, head length and head breadth are moderately correlated. Separately, forearm length, foot length and height are all strongly correlated.
+
+
+
+#### Ex. 3.4 *Not all canonical correlations may be statistically significant. An approximate test proposed by Bartlett (1947) can be used to determine how many significant relationships exist. The test statistic for testing that at least one canonical correlation is significant is Φ20 = − 􏰃n − 12 (q1 + q2 + 1)􏰄 􏰐si=1 log(1 − λi), where the λi are the eigenvalues of E1 and E2. Under the null hypothesis that all correlations are zero, Φ20 has a chi-square distribution with q1 ×q2 degrees of freedom. Write R code to apply this test to the headsize data (Table 3.1) and the depression data (Table 3.3).*
+
+
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### Ex. 3.5 *Repeat the regression analysis for the air pollution data described in the text after removing whatever cities you think should be regarded as outliers. For the results given in the text and the results from the outliers-removed data, produce scatterplots of sulphur dioxide concentra- tion against each of the principal component scores. Interpret your results.*
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
