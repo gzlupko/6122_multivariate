@@ -22,15 +22,76 @@ library(HSAUR2) # air pollution data
 
 #### Ex. 3.1 *Construct the scatterplot of the heptathlon data showing the contours of the estimated bivariate density function on each panel. Is this graphic more useful than the unenhanced scatterplot matrix?*
 
-```{r}
+
+```{r, warning = F, message = F}
 data("heptathlon") 
 # inspect data 
 head(heptathlon) 
+library(GGally) 
+
+dat = heptathlon[, -8]
+ggpairs(dat, diag = list(continuous = wrap("densityDiag", alpha = 0.5)))  
 
 ```
 
 
+
 ```{r}
+plot(dat, pch = ".", cex = 1.5)
+```
+
+
+
+
+```{r}
+
+# scatter plot without 'score'; col. no 8 
+plot(heptathlon[, -8])
+library(QRM) 
+panel.hist <- function(x, ...) {
+     usr <- par("usr"); on.exit(par(usr))
+     par(usr = c(usr[1:2], 0, 1.5) )
+     BiDensPlot(dat, xpts = c(-2, 2), ypts = c(-2, 2), npts = 50,
+           type = c("persp", "contour"), ...)
+
+}
+
+panel.hist
+
+USairpollution$negtemp <- USairpollution$temp * (-1)
+
+USairpollution$temp <- NULL
+
+pairs(dat[,-1], diag.panel = panel.hist, 
+       pch = ".", cex = 1.5)
+```
+
+
+note: use code from pg.51 and instead of using hist() use density on the panels like they do on pg. 87
+
+```{r}
+data("USairpollution", package = "HSAUR2")
+pollution <- USairpollution
+
+
+density(pollution$SO2, pollution$wind) 
+
+
+
+pollution 
+panel.hist <- function(x, ...) {
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(usr[1:2], 0, 1.5)) 
+  h <- hist(x, plot = FALSE)
+  breaks <- h$breaks; nB <- length(breaks)
+  y <- h$counts; y <- y/max(y)
+  rect(breaks[-nB], 0, breaks[-1], y, col="grey", ...)}
+
+pollution$negtemp <- pollution$temp * (-1)
+pollution$temp <- NULL
+pairs(pollution[,-1], diag.panel = panel.hist, pch = ".", cex = 1.5)
+
+
 
 ```
 
@@ -94,15 +155,180 @@ Results from PCA indicated that the first two principal components accounted for
 
 
 
+depression data 
+```{r}
+
+# head size data
+data("frets", package = "boot")
+headsize <- frets
+
+
+depr <- c(
+  0.212,
+  0.124,  0.098,
+ -0.164,  0.308,  0.044,
+ -0.101, -0.207, -0.106, -0.208,
+ -0.158, -0.183, -0.180, -0.192, 0.492)
+
+LAdepr <- diag(6) / 2
+
+LAdepr[upper.tri(LAdepr)] <- depr
+
+LAdepr <- LAdepr + t(LAdepr)
+
+rownames(LAdepr) <- colnames(LAdepr) <- c("CESD", "Health", "Gender", "Age", "Edu", "Income")
+
+x <- LAdepr
+
+LAdepr <- as.data.frame(LAdepr)
+
+#headsize
+headsize.std <- sweep(headsize, 2, apply(headsize, 2, sd), FUN = "/")
+R <- cor(headsize.std)
+r11 <- R[1:2, 1:2]
+r22 <- R[-(1:2), -(1:2)]
+r12 <- R[1:2, -(1:2)]
+r21 <- R[-(1:2), 1:2]
+(E1 <- solve(r11) %% r12 %% solve(r22) %*%r21)
+(E2 <- solve(r22) %% r21 %% solve(r11) %*%r12)
+e1 <- eigen(E1)
+e1
+e2 <-eigen(E2)
+e2
+headsize.std <- t(headsize.std) %*% as.matrix(headsize.std)
+girth1 <- headsize.std[,1:2] %*% e1$vectors[,1]
+girth2 <- headsize.std[,3:4] %*% e2$vectors[,1]
+
+shape1 <- headsize.std[,1:2] %*% e1$vectors[,2]
+shape2 <- headsize.std[,3:4] %*% e2$vectors[,2]
+g <- cor(girth1, girth2)
+s <- cor(shape1, shape2)
+
+
+# Compute the eigenvalues of E1 and E2
+lambda <- e1$values 
+q1 <- ncol(E1)
+q2 <- ncol(E2) 
+
+# Compute the test statistic
+n <- nrow(E1)
+Phi2 <- -(n-(df+1)/2) * sum(log(1 - lambda))
+df <- q1 * q2
+p_value <- pchisq(Phi2, df, lower.tail = FALSE)
+```
 
 
 
 
 
 
+previous attempt 
+
+```{r}
+
+# load headsize df 
+data("frets", package = "boot")
+headsize <- frets
+
+# inspect headsize df 
+head(headsize) 
+
+
+# load depression df 
+
+depr <- c(
+  0.212,
+  0.124,  0.098,
+ -0.164,  0.308,  0.044,
+ -0.101, -0.207, -0.106, -0.208,
+ -0.158, -0.183, -0.180, -0.192, 0.492)
+
+LAdepr <- diag(6) / 2
+
+LAdepr[upper.tri(LAdepr)] <- depr
+
+LAdepr <- LAdepr + t(LAdepr)
+
+rownames(LAdepr) <- colnames(LAdepr) <- c("CESD", "Health", "Gender", "Age", "Edu", "Income")
+
+x <- LAdepr
+
+la_dep <- as.data.frame(LAdepr)
+
+# inspect depression df 
+
+head(la_dep)
+
+
+```
 
 
 
+```{r}
+headsize.std <- sweep(headsize, 2, apply(headsize, 2, sd), FUN = "/")
+R <- cor(headsize.std)
+r11 <- R[1:2, 1:2]
+r22 <- R[-(1:2), -(1:2)]
+r12 <- R[1:2, -(1:2)]
+r21 <- R[-(1:2), 1:2]
+(E1 <- solve(r11) %% r12 %% solve(r22) %*%r21)
+(E2 <- solve(r22) %% r21 %% solve(r11) %*%r12)
+e1 <- eigen(E1)
+e1
+e2 <-eigen(E2)
+e2
+headsize.std <- t(headsize.std) %*% as.matrix(headsize.std)
+girth1 <- headsize.std[,1:2] %*% e1$vectors[,1]
+girth2 <- headsize.std[,3:4] %*% e2$vectors[,1]
+
+shape1 <- headsize.std[,1:2] %*% e1$vectors[,2]
+shape2 <- headsize.std[,3:4] %*% e2$vectors[,2]
+g <- cor(girth1, girth2)
+s <- cor(shape1, shape2)
+
+
+# Compute the eigenvalues of E1 and E2
+lambda <- e1$values 
+q1 <- ncol(E1)
+q2 <- ncol(E2) 
+
+# Compute the test statistic
+n <- nrow(E1)
+Phi2 <- -(n-(df+1)/2) * sum(log(1 - lambda))
+df <- q1 * q2
+p_value <- pchisq(Phi2, df, lower.tail = FALSE
+```
+
+
+
+```{r}
+require(CCA) 
+```
+
+
+
+
+Depression data 
+
+```{r}
+#load depression data
+depr <- c(
+ 0.212,
+ 0.124,  0.098,
+-0.164,  0.308,  0.044,
+-0.101, -0.207, -0.106, -0.208,
+-0.158, -0.183, -0.180, -0.192, 0.492)
+LAdepr <- diag(6) / 2
+LAdepr[upper.tri(LAdepr)] <- depr
+LAdepr <- LAdepr + t(LAdepr)
+rownames(LAdepr) <- colnames(LAdepr) <- c("CESD", "Health", "Gender", "Age", "Edu", "Income")
+x <- LAdepr
+
+x
+LAdepr <- as.data.frame(LAdepr)
+
+
+```
 
 
 
