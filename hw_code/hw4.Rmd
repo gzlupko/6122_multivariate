@@ -1,0 +1,109 @@
+---
+title: "hw4"
+author: "Gian Zlupko"
+date: "2023-03-01"
+output: html_document
+---
+
+
+4.1 
+
+*Consider 51 objects O1, . . . , O51 assumed to be arranged along a straight line with the jth object being located at a point with coordinate j. Define the similarity sij between object i and object j as* [matrix in book chapter].
+
+*Convert these similarities into dissimilarities (δij) by using δij = 􏰓sii + sjj − 2sij and then apply classical multidimensional scaling to the resulting dissimilarity matrix. Explain the shape of the derived two-dimensional solution*
+```{r}
+
+# 
+
+# create a 51 x 51 matrix based on the rule
+M <- matrix(0, nrow = 51, ncol = 51)
+for (i in 1:51) {
+  for (j in 1:51) {
+    if (i == j) {M[i,j] <- 9
+    } else if (abs(i-j) >= 25) {
+      M[i,j] <- 0
+    } else if (abs(i-j) >= 22 & abs(i-j) <= 24) {
+      M[i,j] <- 1
+    } else if (abs(i-j) >= 19  & abs(i-j) <= 21) {
+      M[i,j] <- 2
+    } else if (abs(i-j) >= 16 & abs(i-j) <= 18) {
+      M[i,j] <- 3
+    } else if (abs(i-j) >= 13 & abs(i-j) <= 15) {
+      M[i,j] <- 4
+    } else if (abs(i-j) >= 10 & abs(i-j) <= 12) {
+      M[i,j] <- 5
+    } else if (abs(i-j) >= 7 & abs(i-j) <= 9) {
+      M[i,j] <- 6
+    } else if (abs(i-j) >= 4 & abs(i-j) <= 6) {
+      M[i,j] <- 7
+    } else if (abs(i-j) >= 1 & abs(i-j) <= 3) {
+      M[i,j] <- 8}}}
+
+
+#Convert these similarities into dissimilarities
+d <- matrix(0, nrow = 51, ncol = 51)
+for (i in 1:51) {
+  for (j in 1:51) {
+    d[i,j] <- sqrt(M[i,i] + M[j,j] - 2*M[i,j])}}
+
+# use classical MDS on a distance matrix (so we need to create that matrix, too)
+
+mds1 <- cmdscale(d, k = 2, eig = TRUE)
+
+# cumulative eigen vaules
+eigen_cum <- cumsum(mds1$eig^2) / sum(mds1$eig^2)
+# view first 6 
+head(eigen_cum) 
+
+
+# turn into data frame and plot the points against the coordinates
+points <- data.frame(mds1$points) 
+colnames(points) = c("Dim1", "Dim2")
+
+points %>%
+  ggplot(aes(x = Dim1, y = Dim2)) + geom_point()
+
+```
+
+
+The shape of the 2D plot of the points against the coordinates is inverted U-shaped.
+
+
+4.2 
+
+*Write an R function to calculate the chi-squared distance matrices for both rows and columns in a two-dimensional contingency table.*
+```{r}
+
+```
+
+
+
+
+
+
+4.3
+
+*In Table 4.7 (from Kaufman and Rousseeuw 1990), the dissimilarity matrix of 18 species of garden flowers is shown. Use some form of multidimensional scaling to investigate which species share common properties.*
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
