@@ -5,15 +5,13 @@ date: "2023-03-01"
 output: html_document
 ---
 
-
-
-
-
-
+### Multidimensional Scaling
 
 
 in principle, we ask R to make as many dimensions as possible because we want to choose how many dimensions to retain. The k argument in cmdscale() allows us to set the max number of dimensions. We can choose n-1 to choose the max number of dimensions. 
 
+
+Note on scaling: for Euclidean distance and Manhattan distance we do not need to scale the data before running MDS as these distances naturally do so. 
 
 ```{r}
 mtcars
@@ -48,10 +46,10 @@ Once we have inspected the eigenvalues, we can re-fit MDS with a new value of k 
 
 
 
-Now, we can build a dist matrix using manhattan distance 
+Now, we can build a dist matrix using Manhattan distance 
 ```{r}
 
-# specify that we use manhattan distance in the dist() function
+# specify that we use Manhattan distance in the dist() function
 mds_2 <- cmdscale(dist(mtcars, method = "manhattan"),k = nrow(mtcars) - 1, eig = TRUE)
 ```
 
@@ -60,6 +58,46 @@ mds_2 <- cmdscale(dist(mtcars, method = "manhattan"),k = nrow(mtcars) - 1, eig =
 
 
 
+
+
+
+```{r}
+data("watervoles", package = "HSAUR2") 
+head(watervoles) 
+
+
+# MDS and inspect eigenvalues
+
+cmdscale(dist(watervoles, method = "euclidean"), k = nrow(watervoles) - 1, eig = TRUE) 
+```
+
+
+
+Additional notes 
+
+for loops 
+```{r}
+x = c(3,2,-9,2,4) 
+
+# for statement 
+y = 0
+
+for (i in 1:5) { y = y + x[i] }
+
+y
+
+
+```
+
+
+Demos from the textbook 
+
+```{r}
+library(MVA)
+
+demo("Ch-MVA")
+demo("Ch-Viz") 
+```
 
 
 
