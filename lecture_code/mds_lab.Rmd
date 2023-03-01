@@ -1,0 +1,68 @@
+---
+title: "mds_lab"
+author: "Gian Zlupko"
+date: "2023-03-01"
+output: html_document
+---
+
+
+
+
+
+
+
+
+in principle, we ask R to make as many dimensions as possible because we want to choose how many dimensions to retain. The k argument in cmdscale() allows us to set the max number of dimensions. We can choose n-1 to choose the max number of dimensions. 
+
+
+```{r}
+mtcars
+
+# create distance matrix 
+d = dist(mtcars) 
+
+
+# now apply MDS to distance matrix 
+# where k is n-1 dimensions that are used to represent the dimensions 
+cmdscale(d, k = 9, eig = TRUE) 
+
+```
+
+
+
+We can also store the MDS model to be able to view its outputs
+```{r}
+
+mds1 <- cmdscale(d, k = 9, eig = TRUE)
+
+mds1$eig
+
+# calculate the cumulative sum of the eigenvalues 
+
+cumsum(abs(mds1$eig)) / sum(abs(mds1$eig)) 
+```
+
+Once we have inspected the eigenvalues, we can re-fit MDS with a new value of k for the number of dimensions that we want that was informed by the eigenvalues. 
+
+
+
+
+
+Now, we can build a dist matrix using manhattan distance 
+```{r}
+
+# specify that we use manhattan distance in the dist() function
+mds_2 <- cmdscale(dist(mtcars, method = "manhattan"),k = nrow(mtcars) - 1, eig = TRUE)
+```
+
+
+
+
+
+
+
+
+
+
+
+
