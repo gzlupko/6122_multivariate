@@ -94,7 +94,6 @@ matrix(ret, ncol = ncol(x))
 chi_square_distances(sample_table) 
 
 
-
 ```
 
 
