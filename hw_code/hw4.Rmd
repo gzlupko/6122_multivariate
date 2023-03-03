@@ -5,15 +5,17 @@ date: "2023-03-01"
 output: html_document
 ---
 
+```{r, message = F, warning = F}
+library(tidyverse)
+```
+
 
 4.1 
 
 *Consider 51 objects O1, . . . , O51 assumed to be arranged along a straight line with the jth object being located at a point with coordinate j. Define the similarity sij between object i and object j as* [matrix in book chapter].
 
 *Convert these similarities into dissimilarities (δij) by using δij = 􏰓sii + sjj − 2sij and then apply classical multidimensional scaling to the resulting dissimilarity matrix. Explain the shape of the derived two-dimensional solution*
-```{r}
-
-# 
+```{r, warning = F}
 
 # create a 51 x 51 matrix based on the rule
 M <- matrix(0, nrow = 51, ncol = 51)
@@ -56,7 +58,7 @@ mds1 <- cmdscale(d, k = nrow(d) - 1, eig = TRUE)
 eigen_cum <- cumsum(mds1$eig^2) / sum(mds1$eig^2)
 
 # cumulative sum of eigen values with absolute value 
-cumsum(abs(mds1$eig)) / sum(abs(mds1$eig))
+head(cumsum(abs(mds1$eig)) / sum(abs(mds1$eig))) 
 
 
 
@@ -70,7 +72,7 @@ points %>%
 ```
 
 
-The shape of the 2D plot of the points against the coordinates is inverted U-shaped. In addition, the points appear to be evenly spaced from one another.
+The shape of the 2D plot of the points against the coordinates is inverted U-shaped. In addition, the points appear to be evenly spaced from one another. The spacing of the points confirms our expectations based on rules that we applied to the dissimiliary matrix that we were instructed to build. 
 
 
 *Write an R function to calculate the chi-squared distance matrices for both rows and columns in a two-dimensional contingency table.*
@@ -93,7 +95,6 @@ matrix(ret, ncol = ncol(x))
 # apply the function to the sampe table created 
 chi_square_distances(sample_table) 
 
-
 ```
 
 
@@ -106,7 +107,6 @@ chi_square_distances(sample_table)
 # load the data - imports as a distance matrix 
 data("gardenflowers", package = "HSAUR2")
 
-
 # run classical MDS 
 # note there are 18 species so use k = 17 for maximum number of dimensions
 mds_flowers <- cmdscale(gardenflowers, k = 17, eig = TRUE, add = TRUE) 
@@ -114,24 +114,16 @@ mds_flowers <- cmdscale(gardenflowers, k = 17, eig = TRUE, add = TRUE)
 mds_flowers$eig
 
 
-# cumulative eigen vaules
-cumsum(mds_flowers$eig^2) / sum(mds_flowers$eig^2)
+# cumulative eigen vaules; note use of head() function to limit outputs. Shows that 3 dimensions account for 
+# most of variability in orginal data set 
+head(cumsum(mds_flowers$eig^2) / sum(mds_flowers$eig^2)) 
 plot(x = mds_flowers$points[, 1], y = mds_flowers$points[, 2])
+#text(x, y, labels = rownames(gardenflowers), cex = 0.7)
 
 ```
 
-When running classical MDS, R provides a warning
 
-
-
-
-
-
-```{r}
-demo("Ch-MDS") 
-```
-
-
+The plot shows that the species demonstrate variability across both dimensions. In addition, in the current 2D space, there appear to be four clusters of species that are more alike other species within their cluster, in terms of both of the dimensions used, than the are like those species are in a separate cluster. Seeing these clusters in 2-dimensional space, I would also be curious to visualize a third dimension to explore how the clusters are arranged in greater dimensional space. 
 
 
 
