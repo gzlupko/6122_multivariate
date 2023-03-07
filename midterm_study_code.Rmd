@@ -105,7 +105,22 @@ sapply(colnames(pottery)[1:9], function(x) {
 
 
 
+#### Create a distance matrix
 
+Euclidean
+```{r}
+mat_one
+
+# use dist() function
+dist(mat_one, method = "euclidean") 
+```
+
+
+Manhattan
+
+```{r}
+dist(mat_one, method = "manhattan")
+```
 
 
 
