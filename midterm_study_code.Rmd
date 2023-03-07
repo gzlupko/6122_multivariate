@@ -1,0 +1,69 @@
+---
+title: "midterm_study_code"
+author: "Gian Zlupko"
+date: "2023-03-07"
+output: html_document
+---
+
+
+Code from Ch. 1 - Multivariate Data Analysis
+
+
+```{r}
+library(MVA) 
+demo("Ch-MVA")
+```
+
+
+
+
+
+#### Pearson Correlation and Covariance
+
+Note: use = complete.obs argument will discard the entire row if an NA is present.
+
+```{r}
+
+# correlation matrix, rounded to 2 decimals 
+data_cor <- round(cor(mtcars, use = "complete"), 2)
+data_cor
+```
+
+
+```{r}
+# cov matrix rounded to 2 decimals
+data_cov <- round(cov(mtcars, use = "complete"), 2) 
+
+```
+
+
+
+#### for loop 
+
+Simple for loop function in R. Below, the loop writes over the values in the first three columns with the respective column mean. 
+
+```{r}
+
+
+for (cols in c(1,2,3)) { 
+  
+  mtcars[, cols] <- mean(mtcars[, cols])
+  
+}
+
+# inspect the first three columns where the values were overwritten 
+head(mtcars) 
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
