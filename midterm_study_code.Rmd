@@ -6,17 +6,6 @@ output: html_document
 ---
 
 
-Code from Ch. 1 - Multivariate Data Analysis
-
-
-```{r}
-library(MVA) 
-demo("Ch-MVA")
-```
-
-
-
-
 
 #### Pearson Correlation and Covariance
 
@@ -53,6 +42,28 @@ mat_one <- matrix(c(3.8778, 2.8110, 3.1480, 3.5062,
 round(cov2cor(mat_one), 2)
 
 ```
+
+
+
+Creating symmetric matrix 
+
+use `forceSymmetric()` function from Matrix library if you need to convert a lower triangular matrix into a symmetric one. 
+
+```{r}
+library(Matrix)
+
+corr_lower <- matrix(c(1, 0, 0, 0, 0, 0, 0,
+                       0.402, 1, 0,0,0,0,0,
+                       0.396, 0.618, 1,0,0,0,0,
+                       0.301, 0.150, 0.321, 1,0,0,0,
+                       0.305, 0.135, 0.289, 0.846, 1,0,0,
+                       0.339, 0.206, 0.363, 0.759, 0.797, 1,0,
+                       0.340, 0.183, 0.345, 0.661, 0.800, 0.736, 1),7,7, byrow = T)
+
+# use forceSymmetric() function from Matrix library
+forceSymmetric(corr_lower, uplo = "L")  
+```
+
 
 
 
@@ -125,4 +136,205 @@ dist(mat_one, method = "manhattan")
 
 
 
+#### Principal Components Analysis (PCA)
+
+Method 1: Applied to cov or cor matrix 
+
+In Everitt & Hothon (2011), the authors recommend that the use of a covariance matrix for PCA should only be used when the data are measured on roughly the same scale. This is not common in practice and so a correlation matrix is a good approach. 
+
+The `princomp()` function performs PCA from R stats. You can also use `prcomp` but this function does not easily provide loadings as is shown below using the summary on the PCA model object. 
+
+```{r}
+# create data subset
+mtcars
+mt_cor <- cor(mtcars)
+
+# run PCA: store as a PCA model object
+# note: specify covmat argument when running on a cov or cor mat. Use covmat for both. 
+pca_1 <- princomp(covmat = mt_cor) 
+
+# view PCA output 
+summary(pca_1, loadings = TRUE) 
+
+```
+
+
+
+Scree Plot 
+
+Use the `type = "l"` argument in the `plot()` function to specify a line plot. 
+```{r}
+
+plot(pca_1, type = "l",
+     main = "Scree Plot")
+
+```
+
+
+
+Method 2: applied directly to data
+
+```{r}
+head_dat <- headsize[, c("l1", "l2")]
+# cor matrix 
+head_cor <- cor(headsize)
+head_cor
+
+# PCA
+head_pca <- princomp(head_dat)
+
+# PCA output
+summary(head_pca, loadings = TRUE)
+```
+
+```{r}
+library(factoextra)
+
+# graph biplot 
+fviz_pca_var(head_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
+```
+
+
+
+factoexra library for enhanced PCA viz 
+
+Use mtcars data set 
+
+```{r}
+
+mt_cor <- cor(mtcars) 
+
+mt_pca <- princomp(mt_cor, cor = T)
+summary(mt_pca)
+
+# enhanced scree plot
+fviz_eig(mt_pca)
+
+# Graph of car features. Features with a similar profile are grouped together.
+
+fviz_pca_ind(mt_pca,
+             col.ind = "cos2", # Color by the quality of representation
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
+```
+
+
+
+
+```{r}
+library(HSAUR2) 
+library(tidyverse) 
+# reversing the values 
+heptathlon$hurdles <- with(heptathlon, max(hurdles) - hurdles)
+heptathlon$run200m <- with(heptathlon, max(run200m) - run200m)
+heptathlon$run800m <- with(heptathlon, max(run800m) - run800m)
+heptathlon <- heptathlon %>% select(-score) # remove score
+# build scatterplot matrix 
+plot(heptathlon, pch = ".", cex = 1.5)
+
+```
+
+
+
+```{r}
+hep_cor <- round(cor(heptathlon), 2)
+```
+
+
+```{r}
+pca_hep <- prcomp(heptathlon, scale = T)
+pca_hep
+summary(pca_hep, loadings = TRUE)
+```
+
+```{r}
+plot(pca_hep) 
+plot(pca_hep, type = "l")
+```
+
+
+
+
+```{r}
+biplot(pca_hep, col = c("gray", "black"))
+```
+
+
+
+
+
+
+
+#### Multidimensional Scaling 
+
+Garden flower example
+```{r}
+
+library("MVA")
+data(gardenflowers)
+
+# MDS 
+d_mds <- cmdscale(gardenflowers, k = 17, eig = T)
+
+# get eigenvalues
+eigen <- d_mds$eig
+eigen
+```
+
+Note: some of the eigenvalues are negative which means the distance is not Euclidean. 
+```{r}
+# cumulative proportion of variance
+
+cumsum(abs(eigen)) / sum(abs(eigen)) # method 1 
+
+cumsum(abs(eigen)^2) / sum(abs(eigen)^2) # method 2 
+```
+
+
+
+QQNorm 
+
+```{r}
+pottery 
+
+qqnorm(pottery$Al2O3) 
+
+# to apply qqnorm to all the columns 
+#sapply(pottery, qqnorm)
+```
+
+
+
+Create a matrix 
+```{r}
+mat_a <- matrix(c(1,2,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,10), 5,2, byrow = T)
+
+
+dist_matA <- dist(mat_a) 
+
+mds1 <- cmdscale(dist_matA, eig = T) 
+
+mds1$eig
+
+# cum sum 
+cumsum(abs(mds1$eig)^2) / sum(abs(mds1$eig)^2)
+
+```
+
+
+
+
+```{r}
+pollution <- USairpollution
+pollution
+
+
+```
 
