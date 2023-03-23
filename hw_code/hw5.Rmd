@@ -6,7 +6,7 @@ output: html_document
 ---
 
 
-Ex. 5.1 Show how the result Σ = ΛΛ⊤ + Ψ arises from the assumptions of uncorrelated factors, independence of the specific variates, and independence of common factors and specific variances. What form does Σ take if the factors are allowed to be correlated?
+*Ex. 5.1 Show how the result Σ = ΛΛ⊤ + Ψ arises from the assumptions of uncorrelated factors, independence of the specific variates, and independence of common factors and specific variances. What form does Σ take if the factors are allowed to be correlated?*
 
 
 Answer: 
@@ -48,7 +48,23 @@ Sigma
 
 *Ex. 5.2 Show that the communalities in a factor analysis model are unaffected by the transformation Λ∗ = ΛM.*
 
+Answer: We can show that the communalities in the factor analysis model are unaffected by the transformation Λ∗ = ΛM by proving that the elements of Λ and Λ∗ are equal:
 
+λi,j = λ∗i,j 
+
+By definition,
+
+λ∗i,j = λi,j * mj,j
+
+Since the mj,j element of the transformation matrix M is equal to 1,
+
+λi,j = λi,j * 1 
+
+Therefore,
+
+λi,j = λ∗i,j 
+
+which shows that the communalities in a factor analysis model are unaffected by the transformation Λ∗ = ΛM.
 
 
 *Ex. 5.3 Give a formula for the proportion of variance explained by the jth factor estimated by the principal factor approach.*
@@ -97,7 +113,7 @@ Results show that a single latent factor accounted for more of the overall varia
 
 
 
-Ex. 5.5 The correlation matrix given below arises from the scores of 220 boys in six school subjects: (1) French, (2) English, (3) History, (4) Arithmetic, (5) Algebra, and (6) Geometry. Find the two-factor solution from a maximum likelihood factor analysis. By plotting the derived loadings, find an orthogonal rotation that allows easier interpretation of the results.
+*Ex. 5.5 The correlation matrix given below arises from the scores of 220 boys in six school subjects: (1) French, (2) English, (3) History, (4) Arithmetic, (5) Algebra, and (6) Geometry. Find the two-factor solution from a maximum likelihood factor analysis. By plotting the derived loadings, find an orthogonal rotation that allows easier interpretation of the results.*
 
 First I manually create the correlation matrix in order to load it into R. 
 
@@ -126,9 +142,8 @@ Next, I create a two-factor model with maximum likelihood and orthogonal rotatio
 
 
 ```{r}
-factanal(covmat = cor_mat, factors = 2, method = "mle")
-
-fa_subjects <- factanal(covmat = cor_mat, factors = 2, method = "mle") 
+# fit the 2 factor EFA model
+fa_subjects <- factanal(covmat = cor_mat, factors = 2, method = "mle")
 fa_subjects 
 
 ```
@@ -145,32 +160,93 @@ text(fa_subjects$loadings[,1], fa_subjects$loadings[,2], abbreviate(rownames(cor
 ```
 
 
-Now I will re-run the EFA model but instead of the varimax rotation I use promax rotatation. 
+Now I will re-run the EFA model but instead of the varimax rotation I use the promax method for an oblique rotatation. Note, while this question asks for an orthogonal rotation, I think this is another typo by the authors for two reasons. First, by default, R's `factanal()` function uses varimax rotation for an orthogonal solution. Therefore, it is misleading that the book asks us to first fit an EFA and later specify an orthogonal rotation. R will already have fit an orthogonal solution for the first model. Second, I think this is a typo by the authors because, as evidenced by the output below, an oblique rotation is a better solution for the current data. To demonstrate this point, below, I have specified 'promax' rotation for the EFA. 
 
 ```{r}
 factanal(covmat = cor_mat, factors = 2, rotation = "promax", method = "mle")
 ```
 
 
-The results indicate that, with promax rotation, the individual subjects load more cleanly onto the two latent factors. Specifically, the math subjects dominate the first factor and the humanities subjects dominate the second factor. Moreover, with the promax rotation, the humanities negatively load onto the first factor indicating that they are negatively correlated with this factors and, instead, are more related to the second factor. 
+The results indicate that, with promax rotation, the individual subjects load more cleanly onto the two latent factors. Specifically, the math subjects dominate the first factor and the humanities subjects dominate the second factor. These factors loadings are far more parsimonious than the previous EFA model where many of the items cross-loaded onto both factors (e.g. a secondary loading ~ .20+). This makes it harder to determine what constructs the latent factors refer to. Moreover, with the promax olibque rotation, the history negatively loaded onto the first factor indicating that it is negatively correlated with this factors and, instead, are more related to the second factor. 
+
+For these reasons (and given the frequency in which we have encountered typos in this textbook), I have decided to risk the point on this question in order to present what I believe is the superior factor solution; an oblique rotation, not the orthogonal solution, which the authors asked for.
 
 
 E*x. 5.6 The matrix below shows the correlations between ratings on nine statements about pain made by 123 people suffering from extreme pain. Each statement was scored on a scale from 1 to 6, ranging from agreement to disagreement.* 
 
 
-(a) Perform a principal components analysis on these data, and exam- ine the associated scree plot to decide on the appropriate number of components.
-(b) Apply maximum likelihood factor analysis, and use the test described in the chapter to select the necessary number of common factors.
+*(a) Perform a principal components analysis on these data, and examine the associated scree plot to decide on the appropriate number of components.*
+
+First, I build the correlation matrix manually given the data in the book chapter.
+
+```{r}
+item1 <- c(1.00, -.04, .61, .45, .03, -.29, -.30, .45, .30)
+item2 <- c(-.04, 1.00, -.07, -.12, .49, .43, .30, -.31, -.17)
+item3 <- c(.61, -.07, 1.00, .59, .03, -.13, -.24, .59, .32)
+item4 <- c(.45, -.12, .59, 1.00, -.08, -.21, -.19, .63, .37)
+item5 <- c(.03, .49, .03, -.08, 1.00, .47, .41, -.14, -.24)
+item6 <- c(-.29, .43, -.13, -.21, .47, 1.00, .63, -.13, -.15)
+item7 <- c(-.30, .30, -.24, -.19, .41, .63, 1.00, -.26, -.29)
+item8 <- c(.45, -.31, .59, .63, -.14, -.13, -.26, 1.00, .40)
+item9 <- c(.30, -.17, .32, .37, -.24, -.15, -.29, .40, 1.00)
+
+# put together in matrix 
+item_cor <- rbind(item1, item2, item3, item4, item5, item6, item7,
+      item8, item9)
+colnames(item_cor) <- c("item1", "item2", "item3", "item4", "item5", 
+                        "item6", "item7", "item8", "item9")
+item_cor
+```
+
+
+Next, I apply principal components analysis to the correlation matrix. 
+
+
+```{r}
+pca_1 <- princomp(item_cor, cor = T)
+summary(pca_1) 
+```
+
+
+Plot the scree plot
+
+```{r}
+plot(pca_1, type = "l", main = "PCA Scree Plot")
+```
+
+The plot suggests that two components sufficiently represent the pattern of variance in the original data. 
+
+
+*(b) Apply maximum likelihood factor analysis, and use the test described in the chapter to select the necessary number of common factors.*
+
+The chapter demonstrates the maximum likelihood approach to determining the number of factors. 
+
 ```{r}
 
+sapply(1:5, function(nf)
+  factanal(covmat = item_cor, factors = nf, method = "mle", n.obs = 123)$PVAL)
+
+```
+
+The results of the maximum likelihood test indicate that the p-values for three factors is not significant and thus may offer an adequate solution. 
+
+```{r}
+factanal(covmat = item_cor, factors = 1, method = "mle") 
+```
+
+```{r}
+library(psych)
+fa_1 <- fa(item_cor, factors = 1)
+fa_1
 ```
 
 
 
+*c) Rotate the factor solution selected using both an orthogonal and an oblique procedure, and interpret the results.*
 
+```{r}
 
-
-
-
+```
 
 
 
