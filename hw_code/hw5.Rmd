@@ -1,0 +1,82 @@
+---
+title: "6122_hw5"
+author: "Gian Zlupko"
+date: "2023-03-23"
+output: html_document
+---
+
+
+Ex. 5.1 Show how the result Σ = ΛΛ⊤ + Ψ arises from the assumptions of uncorrelated factors, independence of the specific variates, and indepen- dence of common factors and specific variances. What form does Σ take if the factors are allowed to be correlated?
+
+```{r}
+
+```
+
+
+
+Ex. 5.2 Show that the communalities in a factor analysis model are unaffected by the transformation Λ∗ = ΛM.
+
+```{r}
+
+
+```
+
+
+
+Ex. 5.3 Give a formula for the proportion of variance explained by the jth factor estimated by the principal factor approach.
+
+```{r}
+
+```
+
+Ex. 5.4 Apply the factor analysis model separately to the life expectancies of men and women and compare the results.
+
+```{r}
+
+```
+
+
+Ex. 5.5 The correlation matrix given below arises from the scores of 220 boys in six school subjects: (1) French, (2) English, (3) History, (4) Arithmetic, (5) Algebra, and (6) Geometry. Find the two-factor solution from a max- imum likelihood factor analysis. By plotting the derived loadings, find an orthogonal rotation that allows easier interpretation of the results.
+
+```{r}
+
+```
+
+
+
+
+Ex. 5.6 The matrix below shows the correlations between ratings on nine statements about pain made by 123 people suffering from extreme pain. Each statement was scored on a scale from 1 to 6, ranging from agreement to disagreement. 
+
+
+(a) Perform a principal components analysis on these data, and exam- ine the associated scree plot to decide on the appropriate number of components.
+(b) Apply maximum likelihood factor analysis, and use the test described in the chapter to select the necessary number of common factors.
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
