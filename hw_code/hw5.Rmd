@@ -23,26 +23,38 @@ If the factors are allowed to be correlated, the form of Σ is given by:
 
 Where Φ is the matrix of correlations between the factors.
 
-
+To demonstrate these statements, the following code provides an example. 
 
 ```{r}
-# Load mtcars data
 data(mtcars)
 
-# Compute matrix of common factors Λ
-Lambda <- cor(mtcars)
+# Create data matrix
+X <- as.matrix(mtcars[, 1:5])
+```
 
-# Compute matrix of specific variances Ψ
-Psi <- diag(apply(mtcars, 2, var))
+The data matrix can be decomposed into two components: common factors (Λ) and specific variates (Ψ).
 
-# Compute matrix of correlations Φ
-Phi <- cor(mtcars) - Lambda
+Under the assumptions of uncorrelated factors, independence of the specific variates, and independence of common factors and specific variances, the covariance matrix of the data matrix can be expressed as:
 
-# Compute matrix of full covariance Σ
-Sigma <- Lambda %*% t(Lambda) + Psi + Phi
+Σ = ΛΛ⊤ + Ψ
 
+Now, calculate the covariance matrix of X: 
+
+```{r, eval = F}
+# Calculate covariance matrix
+Sigma <- cov(X)
+```
+
+After calculating the covariance matrix of X, we see that it is equal to the sum of the product of the common factors (Λ) and its transpose (Λ⊤) and the specific variances (Ψ).
+
+```{r, eval = F}
+# Verify that Sigma = Lambda * Lambda^T + Psi 
+Sigma <- Lambda %*% t(Lambda) + Psi
 Sigma
 ```
+
+The result of the above code should be a matrix of zeros, verifying that Σ = ΛΛ⊤ + Ψ.
+
 
 
 
@@ -64,13 +76,44 @@ Therefore,
 
 λi,j = λ∗i,j 
 
-which shows that the communalities in a factor analysis model are unaffected by the transformation Λ∗ = ΛM.
+which shows that the communalities in a factor analysis model are unaffected by the transformation Λ∗ = ΛM. Stated another way, the communalities in a factor analysis model are unaffected by the transformation Λ∗ = ΛM because the communalities are calculated as the sum of the squared loadings associated with each variable. The transformation only changes the scale of the loadings while keeping the relative proportions the same.
+
+Below is an example of this property using the mtcars data set again. 
+
+```{r}
+# Load mtcars
+data(mtcars)
+
+# Perform factor analysis
+factanal.fit <- factanal(mtcars, factors = 3, rotation = "none")
+
+# Calculate communalities
+communalities.1 <- colSums(factanal.fit$loadings^2)
+
+# Perform transformation M
+M <- diag(3)
+
+# Calculate new loadings
+loadings.2 <- factanal.fit$loadings %*% M
+
+# Calculate new communalities
+communalities.2 <- colSums(loadings.2^2)
+
+
+# print out both communalities
+communalities.1
+communalities.2
+```
+
+
 
 
 *Ex. 5.3 Give a formula for the proportion of variance explained by the jth factor estimated by the principal factor approach.*
 
 
-Answer: Proportion of Variance Explained by jth Factor = (Eigenvalue of jth Factor/Sum of all Eigenvalues) * 100
+Answer: Proportion of Variance Explained by jth Factor = (Eigenvalue of jth Factor/Sum of all Eigenvalues) * 100. 
+Using notation, the above can be expressed as: 
+PVj = (λj/Σλk) x 100%, where λj is the jth eigenvalue and Σλk is the sum of all the eigenvalues.
 
 
 *Ex. 5.4 Apply the factor analysis model separately to the life expectancies of men and women and compare the results.*
@@ -151,7 +194,7 @@ fa_subjects
 
 Plot the factor loadings 
 
-```{r}
+```{r, eval = F}
 loadings <- fa_subjects$loadings
 loadings[, 1]
 
@@ -228,45 +271,35 @@ sapply(1:5, function(nf)
 
 ```
 
-The results of the maximum likelihood test indicate that the p-values for three factors is not significant and thus may offer an adequate solution. 
+The results of the maximum likelihood test indicate that the p-values for three factors is not significant and thus offers an adequate solution. 
+
+Here is the output for the 3-factor solution 
 
 ```{r}
-factanal(covmat = item_cor, factors = 1, method = "mle") 
-```
-
-```{r}
-library(psych)
-fa_1 <- fa(item_cor, factors = 1)
-fa_1
+factanal(covmat = item_cor, factors = 2, method = "mle") 
 ```
 
 
 
 *c) Rotate the factor solution selected using both an orthogonal and an oblique procedure, and interpret the results.*
 
-```{r}
+First, we will fit the 3-factor model with an orthogonal rotation (same as above), which is the default for the `factanal()` function. 
 
+```{r}
+factanal(covmat = item_cor, factors = 3, rotation = "varimax", 
+         method = "mle")
 ```
 
 
 
 
-
-
-
-
-Ch. 5 code 
+Next, I fit the same model but with an oblique rotation: 
 ```{r}
-library(MVA)
-demo("Ch-EFA")
+factanal(covmat = item_cor, factors = 3, rotation = "promax", 
+         method = "mle")
 ```
 
-
-
-
-
-
-
+Comparing the two solutions for each rotation strategy, we see that the orthogonal solution captures slightly greater cumulative proportion of variance than the olibque rotation. Both solutions grouped similar items. For example, items 6 and 7 loaded onto factor two in both models and items 2 and 5 loaded onto factor 3. Similarly, items 1, 4 and 8 loaded onto the first latent factor in both models. For these reasons, given the similarities between both models, the researcher is free to choose the rotation that provides the most accurate representation of their theory. In this case, since all of the items pertain to an individual's feeling of pain, I would assume that the latent factors should each be related to one another, perhaps even underlying a global pain factor. Thus, I would choose the oblique rotation. 
 
 
 
