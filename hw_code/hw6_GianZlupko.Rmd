@@ -28,7 +28,9 @@ head(crime)
 Next I scale the data by dividing each variable by its standard deviation. 
 
 ```{r}
-crime_scaled  <- as.data.frame(scale(crime))
+# first drop the outlier, D.C.
+crime <- crime[-which(row.names(crime) == "DC")]
+crime_scaled  <- sweep(crime, 2, apply(crime, 2, sd), FUN = "/")
 
 # check that data was scaled appropriately 
 for (i in 1:ncol(crime_scaled)) {
@@ -101,13 +103,15 @@ plot(pca1, type = "l",
 Again, the findings show that 3 components summarize the original variance in the pottery data set well. 
 
 
-Next, I plot the PCA scores with a scatterplot matrix and display the contours of the bivariate densities on the diagonal panels. The findings suggest that the pottery data can be 
+Next, given the findings above, I use the first three PCA scores and plot a scatterplot matrix. I also display the contours of the bivariate densities on the upper panels and box plots for each component on the diagonal panel.
 
 ```{r}
 library(MASS)
 pairs(pca1$scores[, 1:3], lower.panel = function(x, y){ 
   points(x, y, cex = 1)
   text(x, y, cex = 1.25)},
+  diag.panel = function(x) { 
+    boxplot(x, horizontal = F, add = T)}, 
   upper.panel = function(x, y) { 
     points(x,y)
     den <- MASS::kde2d(x, y)
@@ -119,29 +123,55 @@ pairs(pca1$scores[, 1:3], lower.panel = function(x, y){
 The bivariate scatter plots of the points, as well as the bivariate density contour plots, reveal interesting structures within the relationships of the principal components. For example, in the relationship between component 1 and component 2, there appear to be two separate distributions that are visualized by the contours. These separate distributions are consistent with the clusters that appear in the corresponding scatter plot. The contour plots are thus a useful visual accompaniment to the scatter plot of the components. The kiln numbers however are difficult to read even when adjusting their text size.
 
 
-
-```{r}
-
-
-```
-
-
 *Ex. 6.3 Return to the air pollution data given in Chapter 1 and use finite mixtures to cluster the data on the basis of the six climate and ecology variables (i.e., excluding the sulphur dioxide concentration). Investigate how sulphur dioxide concentration varies in the clusters you find both graphically and by formal significance testing.*
 
 
-```{r}
+```{r, message = F}
+library(mclust)
+data("USairpollution")
+
+# subset data to remove SO2
+pollution_sub <- USairpollution[, -1]
+
+# inspect data scale
+sapply(pollution_sub, sd)
+
+# standardize the data
+pollution_sub <- scale(pollution_sub)
 
 ```
 
 
+Next I fit the mixture model and examine the best clustering model via the model object outputs. 
+```{r}
+mc1 <- Mclust(pollution_sub)
+mc1$modelName
+```
 
 
 
+Results from the fitted mixture model reveal that an ellipsoidal, equal shape model best fits the data. That is, the clusters are ellipsoidal and then have congruent shapes
+
+Next, I inspect the clustering models that can be compared ot 
 
 ```{r}
-library(MVA)
-demo("Ch-CA")
+plot(mc1, pollution_sub, what = "BIC", col = "black")
 ```
+
+
+There are other plotting techinques that we can use to inspect the data that are available in the `mclust` package. 
+
+```{r}
+plot(mc1, what = "classification")
+```
+
+Finally, we can examine use bootstrapping to generate 95% CIs for the model parameters
+
+```{r}
+boot1 <- MclustBootstrap(mc1, nboot = 500, type = "bs")
+summary(boot1, what = "ci")
+```
+
 
 
 
