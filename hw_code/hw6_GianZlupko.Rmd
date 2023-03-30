@@ -105,14 +105,26 @@ Next, I plot the PCA scores with a scatterplot matrix and display the contours o
 
 ```{r}
 library(MASS)
-pairs(pca1$scores[, 1:3], upper.panel = 
-        function(x, y) { 
-          points(x, y)
-          den <- MASS::kde2d(x, y)
-          contour(den, add = T, col = "blue", lwd = 2)})
+pairs(pca1$scores[, 1:3], lower.panel = function(x, y){ 
+  points(x, y, cex = 1)
+  text(x, y, cex = 1.25)},
+  upper.panel = function(x, y) { 
+    points(x,y)
+    den <- MASS::kde2d(x, y)
+    contour(den, add = T, col = "blue", lwd = 2)
+    })
+
 ```
 
-The bivariate scatter plots of the points, as well as the bivariate density contour plots, reveal interesting structures within the relationships of the principal components. For example, in the relationship between component 1 and component 2, there appear to be two separate distributions that are visualized by the contours. These separate distributions are consistent with the clusters that appear in the corresponding scatter plot. The contour plots are thus a useful visual accompaniment to the scatter plot of the components. 
+The bivariate scatter plots of the points, as well as the bivariate density contour plots, reveal interesting structures within the relationships of the principal components. For example, in the relationship between component 1 and component 2, there appear to be two separate distributions that are visualized by the contours. These separate distributions are consistent with the clusters that appear in the corresponding scatter plot. The contour plots are thus a useful visual accompaniment to the scatter plot of the components. The kiln numbers however are difficult to read even when adjusting their text size.
+
+
+
+```{r}
+
+
+```
+
 
 *Ex. 6.3 Return to the air pollution data given in Chapter 1 and use finite mixtures to cluster the data on the basis of the six climate and ecology variables (i.e., excluding the sulphur dioxide concentration). Investigate how sulphur dioxide concentration varies in the clusters you find both graphically and by formal significance testing.*
 
