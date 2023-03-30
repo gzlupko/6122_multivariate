@@ -8,6 +8,8 @@ output: html_document
 
 *Ex. 6.1 Apply k-means to the crime rate data after standardizing each variable by its standard deviation. Compare the results with those given in the text found by standardizing by a variable’s range.*
 
+First I create the crime data set.
+
 ```{r}
 crime <- structure(c(2, 2.2, 2, 3.6, 3.5, 4.6, 10.7, 5.2, 5.5, 5.5, 6, 8.9, 11.3, 3.1, 2.5, 1.8, 9.2, 1, 4, 3.1, 4.4, 4.9, 9, 31, 7.1,
 5.9, 8.1, 8.6, 11.2, 11.7, 6.7, 10.4, 10.1, 11.2, 8.1, 12.8,
@@ -19,17 +21,71 @@ crime <- structure(c(2, 2.2, 2, 3.6, 3.5, 4.6, 10.7, 5.2, 5.5, 5.5, 6, 8.9, 11.3
 
 crime <- as.data.frame(crime)
 
+# inspect the data set
 head(crime)
 ```
+
+Next I scale the data by dividing each variable by its standard deviation. 
+
+```{r}
+crime_scaled  <- as.data.frame(scale(crime))
+
+# check that data was scaled appropriately 
+for (i in 1:ncol(crime_scaled)) {
+  print(sd(crime_scaled[,i]))
+}
+```
+
+
+Next I apply k-means to the standardized crime data. I examine within-group sum of squares (WGSS) as a method for determining how my `k` clusters to fit. Following the authors' direction, I examine two to six clusters and use the elbow method to evaluate which number of clusters sufficiently minimizes WGSS. 
+
+
+```{r}
+n <- nrow(crime_scaled)
+wss <- rep(0,6)
+wss[1] <- (n - 1) * sum(sapply(crime_scaled, var))
+for (i in 2:6)
+  wss[i] <- sum(kmeans(crime_scaled, 
+                       centers = i)$withinss)
+plot(1:6, wss, type = "b", xlab ="Number of groups", 
+     ylab = "Within groups sum of squares")
+```
+
+Results indicate that two clusters is sufficiently minimizes WGSS, suggesting that the data contain two clusters. In contrast, using a separate data standardization technique, the authors found that the data contain three clusters. Differences in the values of `k` should be expected when separate data transformations are applied to the raw data before using k-means. 
 
 
 
 *Ex. 6.2 Calculate the first five principal components scores for the Romano- British pottery data, and then construct the scatterplot matrix of the scores, displaying the contours of the estimated bivariate density for each panel of the plot and a box plot of each score in the appropriate place on the diagonal. Label the points in the scatterplot matrix with their kiln numbers.*
 
+First I load the pottery data and inspect it. I also remove the kiln variable as it is a categorical variable and therefore not able to be used with PCA. 
+```{r, message = F}
+library(tidyverse)
+library(HSAUR2)
+data(pottery)
+
+# remove kiln 
+pottery_sub <- pottery %>% 
+  select(-kiln)
+
+# inspect data varainces
+for (i in 1:ncol(pottery_sub)) { 
+  print(var(pottery_sub[, i]))
+  }
+```
+By inspecting the variances we see that the scales are very different for each variable. Therefore, before using PCA, I standardize the data.
+
+```{r}
+pottery_scaled <- as.data.frame(scale(pottery_sub)) 
+
+# confirm that data was scaled appropriately
+for (i in 1:ncol(pottery_scaled)) { 
+  print(var(pottery_scaled[, i]))
+  }
+```
+
 ```{r}
 
 ```
-
 
 
 
