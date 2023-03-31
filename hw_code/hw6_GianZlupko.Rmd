@@ -165,12 +165,32 @@ There are other plotting techinques that we can use to inspect the data that are
 plot(mc1, what = "classification")
 ```
 
-Finally, we can examine use bootstrapping to generate 95% CIs for the model parameters
+Finally, we can return the cluster classifications to the original data to examine whether there is a relationship between the cluster group and SO2 levels. 
 
 ```{r}
-boot1 <- MclustBootstrap(mc1, nboot = 500, type = "bs")
-summary(boot1, what = "ci")
+# create a df with the mixture model cluster classification
+clusters <- data.frame(mc1$classification)
+
+# return the cluster column to the original data and clean data
+poll_clusters <- cbind(USairpollution, clusters)
+head(poll_clusters) 
+
+poll_clusters <- poll_clusters %>% 
+  rename(cluster_no = mc1.classification) %>%
+  mutate(clust_fct = as.factor(cluster_no)) 
+
+names(poll_clusters[, 1]) <- "SO2"
+
 ```
+
+Next I fit a simple regression model to examine how SO2 varies as a function of the cluster number.
+```{r}
+mod1 <- lm(SO2 ~ clust_fct, data = poll_clusters)
+summary(mod1) 
+```
+The overall model is not significant. However, interpreting mean scores alone, the results indicate that one cluster (no. 7) is has significantly lower SO2 levels, on average, but again - this finding is not statistically significant.  Specifically, SO2 levels for this cluster are lower than other clusters. 
+
+
 
 
 
