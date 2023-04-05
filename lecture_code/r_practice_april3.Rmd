@@ -146,10 +146,156 @@ plot(hc.single, main = "Single Linkage", xlab = "", sub  = "", cex =0.9)
 
 
 
-
+We can also use a correlation-based distance. 
 ```{r}
+x = matrix(rnorm(90), ncol = 3)
+# use the transpose of X so that dim of matrix is 50 x 50 
+dist_x = as.dist(1 - cor(t(x))) 
+
+# now we use HCA 
+cor_hca = hclust(dist_x, method = "complete") 
+plot(cor_hca, main = "HCA w/ Cor Distance", xlab = "", sub = "")  
 
 ```
+
+
+
+
+
+Genomics example 
+
+PCA and then HCA cluster analysis 
+```{r}
+library(ISLR)
+nci60.labs = NCI60$labs
+cancer_data = NCI60$data
+dim(cancer_data)
+```
+
+
+```{r}
+nci60.labs
+```
+
+PCA 
+
+Note: custom color function used
+```{r}
+pca1 = prcomp(cancer_data, scale = T) 
+
+# write a custom function
+# assigns a different color to each element of a vector 
+Colors = function(vec) { 
+  cols = rainbow(length(unique(vec))) 
+  return(cols[as.numeric(as.factor(vec))])
+}
+
+
+par(mfrow = c(1,2))
+plot(pca1$x[, 1:2], col = Colors(nci60.labs), pch = 19, 
+     xlab = "Y1", ylab = "Y2")
+
+plot(pca1$x[, 1:3], col = Colors(nci60.labs), pch = 19, 
+     xlab = "Y1", ylab = "Y3")
+```
+
+
+
+Summary of PCA
+```{r}
+summary(pca1) 
+
+# scree plot
+plot(pca1, type = "l", main = "Scree Plot") 
+```
+
+
+
+
+
+```{r}
+plot(pca1$sdev^2/sum(pca1$sdev^2)*100, type = "b", 
+     main = "Percentage of Explained Variance", 
+     xlab = "PC", 
+     col = "blue", 
+     ylab = "Variance Accounted For") 
+```
+
+
+Note our data is 64 x 6830. We can have up to 64 components because we can have up to the number of non-zero eigenvalues. In principle you can compute up to 'q' components but the rank of the matrix S is at most the minimum (n, q). So after the 64th component, we will have eigenvalues with a value of zero. 
+
+So in really wide data sets like this one we can expect to have up to 'n' meaningful components. 
+
+
+
+
+```{r}
+# another way to examine the cumulative proportion of the variance accounted for
+cumsum(pca1$sdev) / sum(pca1$sdev) 
+
+plot(cumsum(pca1$sdev) / sum(pca1$sdev), type = "l", 
+     xlab = "Number of Components", 
+     ylab = "Variance Explained")
+abline(h = .6) # a line if we wanted to viz a cutpoint
+```
+
+
+
+
+Can also use this approach to plotting the cumulative variance. 
+```{r}
+plot(pca1$sdev^2, type = "b") 
+```
+
+
+
+
+HCA
+```{r}
+# scale the data 
+sdata = scale(cancer_data) 
+
+# plot three HCA methods we are familiar with 
+par(mfrow = c(1,3))
+plot(hclust(dist(sdata), method = "complete"), 
+     labels = nci60.labs, main = "Complete Linkage", xlab = "") 
+plot(hclust(dist(sdata), method = "average"), 
+     labels = nci60.labs, main = "Average Linkage", xlab = "") 
+plot(hclust(dist(sdata), method = "single"), 
+     labels = nci60.labs, main = "Single Linkage", xlab = "") 
+
+```
+
+
+
+Plot a single dendrogram from the above plot 
+
+```{r}
+plot(hclust(dist(sdata), method = "complete"), 
+     labels = nci60.labs, main = "Complete Linkage", xlab = "") 
+```
+
+
+Cut the dendrogram
+```{r}
+hca1 = hclust(dist(sdata)) 
+
+# cut the tree
+hca.clusters = cutree(hca1, 4) 
+
+
+# review the cluster labels with the real cancer type labels
+table(hca.clusters, nci60.labs) 
+```
+
+
+Notice that Leukemia was assigned to the same cluster. 
+
+```{r}
+par(mfrow = c(1,1)); plot(hca1, labels = nci60.labs)
+abline(h = 139, col = 2)
+```
+We end up with 4 distinct clusters if we cut at the line specified. 
 
 
 
