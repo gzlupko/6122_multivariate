@@ -11,7 +11,7 @@ output: html_document
 
 
 
-```{r}
+```{r, warning = F}
 getwd() 
 setwd("/Users/gianzlupko/Desktop/HUDM 6122 Multivariate/6122_multivariate/data")
 
@@ -19,10 +19,89 @@ setwd("/Users/gianzlupko/Desktop/HUDM 6122 Multivariate/6122_multivariate/data")
 genes <- read.csv("genes.csv")
 ```
 
+Inspect the data
+```{r}
+dim(genes) 
+head(genes) 
+```
+
+
+
+#### K-Means
+
+
+First lets check the variance to see if we need to rescale the data 
+```{r}
+for (i in 1:ncol(genes)) { 
+  print(var(genes[, i])) 
+  }
+```
+
+
+```{r}
+dist_mat <- as.dist(matrix(c(0, .3, .4, .7,
+              .3, 0, .5, .8, 
+              .4, .5, 0, .45, 
+              .7, .8, .45, 0), nrow = 4, byrow = T)) 
+
+dist_mat
+
+# now fit hca with complete linkage 
+hca1 = hclust(dist_mat, method = "complete")
+
+# plot dendrogram
+
+plot(hca1) 
+```
+
+
+
+Single linkage clustering
+
+```{r}
+hca2 = hclust(dist_mat, method = "single") 
+
+# now plot dendrogram 
+plot(hca2) 
+```
+
+
+```{r}
+plot(hclust(dist_mat, method = "complete"), labels = c(2,1,4,3))
+```
+
+
+
+K Means Manually
+
+
+```{r}
+x = cbind(c(1,1,0,5,6,4), c(4,3,4,1,2,0))
+x
+
+# view scateter plot of data
+plot(x[, 1], x[,2], pch = 17)
+```
+We can see two groups clustered in the 2-D space 
+
+
+Randomly assign a cluster label to each observation 
+```{r}
+set.seed(2381) # to ensure that we can replicate answer 
+labels = sample(2, nrow(x), replace = T)
+labels 
+x = cbind(x, labels)
+```
 
 
 
 ```{r}
-head(genes) 
+centroid1 = c(mean(x[, labels == 1, 1]), mean(x[labels == 1, 2]))
+centroid2 = c(mean(x[, labels == 2, 1]), mean(x[labels == 2, 2]))
 ```
+
+
+
+
+
 
