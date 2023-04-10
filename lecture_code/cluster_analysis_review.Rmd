@@ -1,0 +1,28 @@
+---
+title: "6122_cluster_analysis_review"
+author: "Gian Zlupko"
+date: "2023-04-10"
+output: html_document
+---
+
+
+
+
+
+
+
+```{r}
+getwd() 
+setwd("/Users/gianzlupko/Desktop/HUDM 6122 Multivariate/6122_multivariate/data")
+
+# load genes data 
+genes <- read.csv("genes.csv")
+```
+
+
+
+
+```{r}
+head(genes) 
+```
+
