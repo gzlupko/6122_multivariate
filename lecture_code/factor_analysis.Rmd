@@ -1,0 +1,116 @@
+---
+title: "factor_analysis"
+author: "Gian Zlupko"
+date: "2023-04-12"
+output: html_document
+---
+
+
+Load the data from a .rdata file
+```{r}
+load("/Users/gianzlupko/Desktop/HUDM 6122 Multivariate/6122_multivariate/data/conspiracy.rdata")
+```
+
+
+GCBS stands for general conspiracy belief survey 
+
+n = 2,495
+q = 15 
+```{r}
+library(psych) 
+describe(GCBS) 
+```
+
+
+
+Lower cor matrix 
+```{r}
+lowerCor(GCBS, use = "pairwise.complete.obs")
+```
+
+Every p-value is significant 
+```{r}
+round(corr.test(GCBS, use  = "pairwise.complete.obs")$p, 5) 
+```
+
+
+Confidence intervals - they are small because N is large
+```{r}
+round(corr.test(GCBS, use  = "pairwise.complete.obs")$ci, 3) 
+```
+
+
+### Factor Analysis
+
+Note we call this `efa.cor` to indicate that FA is applied on the correlation matrix. 
+```{r}
+efa.cor <- fa(GCBS)
+
+# print results
+print(efa.cor) 
+```
+
+
+Item loadings
+
+```{r}
+efa.cor$loadings
+```
+
+In FA we have a random model with error. In PCA we do not have a model and no error. The model in FA techniques is the model corresponding to the underlying construct and its relationship to the manifest items/tests. 
+
+
+```{r}
+fa.diagram(efa.cor) 
+```
+
+The values that we see are the strength of the loadings between the items and the construct. The diagram also shows the direction. 
+
+
+2-factor EFA 
+```{r}
+fa2 <- fa(GCBS, nfactors = 2)
+fa.diagram(fa2) 
+```
+
+
+
+Varimax rotation
+```{r}
+mle.varimax <- fa(GCBS, 2, rotate = "varimax", fm  = "mle")
+fa.diagram(mle.varimax) 
+```
+
+print sum by rows of first 20 respondent to sum up the values of the 15 columns. This tells you which responded was scoring high or low on the sum of all columns. This makes sense to do for FA as FA is based on linear combinations of the variables and the most simple linear combination is to sum across columns. 
+
+```{r}
+tot.scores = apply(GCBS, FUN = sum, MARGIN = 1)
+head(tot.scores, 10)  
+```
+
+View the max scores for the participant sums across all variables
+```{r}
+index = which(tot.scores == max(tot.scores)) 
+index 
+```
+
+
+
+
+
+
+Print first 6 factor scores. 
+```{r}
+head(efa.cor$scores) 
+
+# summarize the scores
+summary(efa.cor$scores) 
+```
+
+
+
+
+
+
+
+
