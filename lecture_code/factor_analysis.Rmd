@@ -6,6 +6,10 @@ output: html_document
 ---
 
 
+
+
+#### Data set 1: Conspiracy tendency data
+
 Load the data from a .rdata file
 ```{r}
 load("/Users/gianzlupko/Desktop/HUDM 6122 Multivariate/6122_multivariate/data/conspiracy.rdata")
@@ -106,6 +110,168 @@ head(efa.cor$scores)
 # summarize the scores
 summary(efa.cor$scores) 
 ```
+
+#### Data set 2: Test scores data
+
+Load scores data
+```{r, warning = F}
+setwd("/Users/gianzlupko/Desktop/HUDM 6122 Multivariate/6122_multivariate/data")
+ load("/Users/gianzlupko/Desktop/HUDM 6122 Multivariate/6122_multivariate/data/scores.rdata")
+```
+
+
+
+```{r}
+# inspect the data
+head(scores) 
+
+# view item correlations 
+lowerCor(scores) 
+```
+
+
+
+```{r}
+# view p-value for the correlations
+round(corr.test(scores)$p, 4)
+```
+
+Notice, now not all of the variables are significantly related to one another. 
+
+
+`Factanal` function provides a helpful test to determine the number of factors. 
+```{r}
+factanal(scores, factors = 1) 
+```
+In the output, we see that we are testing the hypothesis that there is only 1 factor, which is how we specified the EFA model in the function. We see that the p-value is very small so we reject the null that 1 factor is sufficient. 
+
+We can do the same for 2 factors. 
+
+```{r}
+factanal(scores, factors = 2) 
+```
+Now it is not significant so we do not reject the null and we can retain the 2 factor solution. 
+
+
+```{r}
+library(semPlot)
+
+# fit FA 
+fa_2 <- factanal(scores, factors = 2) 
+
+# plot diagram
+semPaths(fa_2, what = 'est')  
+```
+
+
+
+#### Rotations
+Varimax rotation: orthogonal
+Oblique: allows for correlation between factors 
+
+
+If you suspect that the factors may be related you should test an oblique rotation
+```{r}
+
+fa2_ob <- factanal(scores, factors = 2, rotation = "promax") 
+
+semPaths(fa2_ob, what = "est") 
+```
+
+
+Communality
+
+The variance explained by a common factor. 
+
+```{r}
+
+# view communality explained by our first EFA model
+efa.cor$communalities
+```
+
+
+Uniqueness  
+
+Unique variance is that which is specific to each item/variable. Unique var can be comprised of item-specific var as well as error.
+
+```{r}
+efa.cor$uniquenesses
+
+```
+
+
+
+#### Data set 3: Survey data
+
+Load survey data
+```{r}
+load("/Users/gianzlupko/Desktop/HUDM 6122 Multivariate/6122_multivariate/data/survey.rdata")
+
+# inspect 
+head(survey) 
+```
+
+View descriptives
+
+```{r}
+describe(survey) 
+```
+
+
+
+```{r}
+library(corrplot) 
+
+# store corr mat 
+survey_cor = cor(survey) 
+corrplot(corr = survey_cor) 
+```
+
+
+
+KMO 
+
+Kaiser-Meyer-Olkin sampling adequecy as a measure of factorability. Kaiser developed methods for varimax (orthogonal) rotation. He also developed KMO, which is used ot check whether the ampel is adqueate for FA. specifically, if KMO is larger than or at least .60, then it makes sense to use a factor model
+
+```{r}
+KMO(r = cor(survey))
+```
+
+The overall KMO is .80, which means that FA is appropriate 
+
+
+We can also use the Bartlett test of sphreicity to determine if FA methods can be used. 
+```{r}
+cortest.bartlett(survey)
+```
+
+
+The null is that all the variables have no covariance with one another. Here, the p-value is small so we reject the null and accept the alternative that the variables do exhibit covariance. Remember, a basic assumption that is required for FA is that the variables are correlated with one another. Bartlett's test allows us to determine if there 'is enough' covariance to do FA. 
+
+
+```{r}
+
+```
+
+
+
+Scree plot 
+```{r}
+# use `scree()` from the psych package
+scree(survey, factors = T) 
+```
+
+
+There is an elbow at 2 and another elbow at 5. Lets look at the output for an EFA model using each to determine how many factors. 
+```{r}
+factanal(survey, factors = 2, rotation = "promax") 
+```
+
+
+```{r}
+factanal(survey, factors = 5, rotation = "promax")
+```
+
 
 
 
