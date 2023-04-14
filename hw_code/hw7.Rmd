@@ -12,7 +12,7 @@ For this HW you will use the USArrests data.
 
 #### 1. In our class we mentioned the use of correlation-based distance and Euclidean distance as dissimilarity measures for hierarchical clustering. It turns out that these two measures are almost equivalent. Assume each observation has been centered to have mean zero and standard deviation one, and let rij denote the correlation between the ith and jth observations. Then the quantity 1 − rij is proportional to the squared Euclidean distance between the ith and jth observations. Using the data, show that this proportionality holds.
 
-First we need to center the data with mean zero since the variances are not equivalent. 
+First I need to center the data with mean zero since the variances are not equivalent. 
 ```{r}
 # store to 'arrests' for easier name 
 arrests <- USArrests
@@ -25,7 +25,7 @@ arrest_scaled <- scale(arrests)
 ```
 
 
-Next, we can build two separate dissimilarity measures:  
+Next, I build two separate dissimilarity measures:  
 
 Euclidean distance 
 ```{r}
@@ -39,7 +39,7 @@ Correlation
 df_cor <- cor(arrest_scaled)
 ```
 
-Next, we need to show the following proportionality: 
+Next, I need to show the following proportionality: 
 
 $$
 1 - rji = dist(ij)^2
@@ -84,13 +84,13 @@ right_side <- prop_const * dist_matrix
 all.equal(left_side, right_side, tolerance = 1e-10)
 ```
 
-Hmm... that's not right. 
+Hmm... 
 
 
 #### 2. Section 3.3 on page 65 gives a formula for calculating the proportion of the total variation (PTV) explained by the principal components. We also saw that the PTV can be obtained using the sdev output of the prcomp function. Calculate the PTV using these two approaches – they should deliver the same results.
 
 
-First, we can easily obtain the PTV with the PCA output in the model object. 
+First, I can easily obtain the PTV with the PCA output in the model object. 
 ```{r}
 pca1 <- prcomp(arrest_scaled) 
 
@@ -98,51 +98,113 @@ summary(pca1)
 ```
 
 
-We can get the same answer by extracting the squared SD of the components from the PCA model object. 
+I get the same answer by extracting the squared SD of the components from the PCA model object. 
 
 $$
 SD^2i/sum(SD^2model)*100
 $$ 
-Where i represents the ith principal component, SD represents the square root of the variance obtained from the cov matrix (e.g. the eigenvalue of the covariance/correlation matrix) and the sum represents the total variance obtained from all principal components in the model. Finally, we multiply the equation by 100 to obtain proportions. Here is the solution: 
+Where i represents the ith principal component, SD represents the square root of the variance obtained from the cov matrix (e.g. the eigenvalue of the covariance/correlation matrix) and the sum represents the total variance obtained from all principal components in the model. Finally, I multiply the equation by 100 to obtain proportions. Here is the solution: 
 
 ```{r}
 pca1$sdev^2/sum(pca1$sdev^2)*100
 ```
 
-We see that the results obtained from the manual calculation above align with the results obtained from the summary call on the model object.
+I see that the results obtained from the manual calculation above align with the results obtained from the summary call on the model object.
 
 #### 3. We aim at performing hierarchical clustering on the states.
 #### (a) Using hierarchical clustering with complete linkage and Euclidean distance, cluster the states.
 
 ```{r}
+# Create a dist mat using euclidean 
+arrest_dist <- dist(USArrests, method = "euclidean")
 
+# fit HCA with complete linkage 
+hca1 <- hclust(arrest_dist, method = "complete")
 ```
 
 
 
 #### (b) Cut the dendrogram at a height that results in three distinct clusters. Which states belong to which clusters?
 
+First I can visualize the dendrogram for the HCA model that was fit above. Additionally, I can fit a line to the plot indicating where I should cut the treee in order to retain three clusters. 
 ```{r}
-
+plot(hca1, xlab = "")
+abline(h = 125, col = "red")
 ```
 
+Cutting the tree around 125 leads to three distinct clusters. Below I perform the tree cutting. 
+
+```{r}
+# cut the tree to separate into 3 clusters 
+hca1_clusters = cutree(hca1, 3) 
+
+# review the states and their assigned cluster
+hca1_clusters
+
+```
+After cutting the dendrogram to form 3 distinct groups, inspection of the results indicates that the following states are clusterd together: 
+
+* Cluster 1: Alabama, Alaska, Delaware, Arizona, Florida, California, and more... 
+* Cluster 2: Missouri, Oregon, Texas, Rhode Island, Virginia, Washington, and more.. 
+* Cluster 3: Wisconsin, Connecticut, Pennsylvania, South Dakota, West Virginia, and more... 
+
+It is not clear why these states are clustered together. In the next problem, I will inspect if scaling the data prior improves the interpretability of the clusters. 
 
 #### (c) Hierarchically cluster the states using complete linkage and Euclidean distance, after scaling the variables to have standard deviation one.
 
 ```{r}
+# scale data for an SD = 1 
+arrests_sd_scale <- scale(USArrests)
 
+# check that SD = 1
+for (i in 1:ncol(arrests_sd_scale)) { 
+  
+  print(sd(arrests_sd_scale[, i])) 
+
+  }
+```
+SD = 1 confirmed. 
+
+Next, I create a euclidean distance matrix on the scaled data. 
+```{r}
+dist_sd_scaled <- dist(arrests_sd_scale, method = "euclidean")
+```
+
+
+Now, I fit HCA using complete linkage on the scaled data. 
+
+```{r}
+hca2 <- hclust(dist_sd_scaled, method = "complete")
 ```
 
 
 #### (d) What effect does scaling the variables have on the hierarchical clustering obtained? In your opinion, should the variables be scaled before the inter-observation dissimilarities are computed? Provide a justification for your answer.
 
+To address this question, I inspect the dendrogram again and cut the tree into 3 distinct groups. I want to see if scaling the data prior improved the coherence of the clusters. 
 
 ```{r}
-
+plot(hca2, xlab = "")
+abline(h = 4.5, col = "red")
 ```
 
 
 
+```{r}
+# cut into 3 distinct clusters 
+hca2_clusters <- cutree(hca2, k = 3) 
+
+# inspect the clusters 
+hca2_clusters
+```
+
+
+The following clusters for the second HCA model are as follows: 
+
+* Cluster 1: Georgian, South Carolina, Alabama, Tennessee, Louisiana, and more ... 
+* Cluster 2: Texas, California, Colorado, Illinois, Rhode Island, and more ...  
+* Cluster 3: Missouri, Oklahoma, New Jersey, West Virginia, Idaho, and more ...
+
+These clusters appear to be more internally consistent (meaningful) than the previous clusters that were formed. Specifically, Cluster 1 seems to represent clusters that are rural and southern U.S. states whereas Cluster 2 seems to represent more populous and larger states. In contrast, with the first HCA model, the distinctions between the clusters were less interpretable. Therefore, it is clear that standardizing the variables prior to clustering is an important step. This makes sense, too, as cluster analysis is partitioning within cluster variance. If the variances are significantly different from one another due to the original scale that the variables were measured on, the clustering solution will be less than optimal. 
 
 
 
