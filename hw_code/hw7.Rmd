@@ -89,8 +89,12 @@ Hmm... that's not right.
 
 #### 2. Section 3.3 on page 65 gives a formula for calculating the proportion of the total variation (PTV) explained by the principal components. We also saw that the PTV can be obtained using the sdev output of the prcomp function. Calculate the PTV using these two approaches – they should deliver the same results.
 
+
+First, we can show the PTV with the PCA output in the model object. 
 ```{r}
 
+pca1 <- princomp(arrest_scaled) 
+summary(pca1) 
 
 
 
@@ -122,7 +126,7 @@ Hmm... that's not right.
 ```
 
 
-#### (d) What effect does scaling the variables have on the hierarchical clus- tering obtained? In your opinion, should the variables be scaled before the inter-observation dissimilarities are computed? Provide a justification for your answer.
+#### (d) What effect does scaling the variables have on the hierarchical clustering obtained? In your opinion, should the variables be scaled before the inter-observation dissimilarities are computed? Provide a justification for your answer.
 
 
 ```{r}
