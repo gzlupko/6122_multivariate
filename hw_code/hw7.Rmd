@@ -1,0 +1,37 @@
+---
+title: "hw7"
+author: "Gian Zlupko"
+date: "2023-04-14"
+output: html_document
+---
+
+
+
+
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
