@@ -90,18 +90,26 @@ Hmm... that's not right.
 #### 2. Section 3.3 on page 65 gives a formula for calculating the proportion of the total variation (PTV) explained by the principal components. We also saw that the PTV can be obtained using the sdev output of the prcomp function. Calculate the PTV using these two approaches – they should deliver the same results.
 
 
-First, we can show the PTV with the PCA output in the model object. 
+First, we can easily obtain the PTV with the PCA output in the model object. 
 ```{r}
+pca1 <- prcomp(arrest_scaled) 
 
-pca1 <- princomp(arrest_scaled) 
-summary(pca1) 
-
-
-
+summary(pca1)
 ```
 
 
+We can get the same answer by extracting the squared SD of the components from the PCA model object. 
 
+$$
+SD^2i/sum(SD^2model)*100
+$$ 
+Where i represents the ith principal component, SD represents the square root of the variance obtained from the cov matrix (e.g. the eigenvalue of the covariance/correlation matrix) and the sum represents the total variance obtained from all principal components in the model. Finally, we multiply the equation by 100 to obtain proportions. Here is the solution: 
+
+```{r}
+pca1$sdev^2/sum(pca1$sdev^2)*100
+```
+
+We see that the results obtained from the manual calculation above align with the results obtained from the summary call on the model object.
 
 #### 3. We aim at performing hierarchical clustering on the states.
 #### (a) Using hierarchical clustering with complete linkage and Euclidean distance, cluster the states.
