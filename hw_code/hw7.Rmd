@@ -10,15 +10,81 @@ output: html_document
 For this HW you will use the USArrests data.
 
 
-#### 1. In our class we mentioned the use of correlation-based distance and Euclidean distance as dissimilarity measures for hierarchical clustering. It turns out that these two measures are almost equivalent. Assume each observation has been centered to have mean zero and standard deviation one, and let rij denote the correlation between the ith and jth observa- tions. Then the quantity 1 − rij is proportional to the squared Euclidean distance between the ith and jth observations. Using the data, show that this proportionality holds.
+#### 1. In our class we mentioned the use of correlation-based distance and Euclidean distance as dissimilarity measures for hierarchical clustering. It turns out that these two measures are almost equivalent. Assume each observation has been centered to have mean zero and standard deviation one, and let rij denote the correlation between the ith and jth observations. Then the quantity 1 − rij is proportional to the squared Euclidean distance between the ith and jth observations. Using the data, show that this proportionality holds.
 
+First we need to center the data with mean zero since the variances are not equivalent. 
 ```{r}
+# store to 'arrests' for easier name 
+arrests <- USArrests
+
+head(arrests) 
+
+# center data 
+arrest_scaled <- scale(arrests)
 
 ```
 
 
+Next, we can build two separate dissimilarity measures:  
+
+Euclidean distance 
+```{r}
+df_dist <- dist(arrest_scaled, method = "euclidean") 
+head(df_dist) 
+```
 
 
+Correlation 
+```{r}
+df_cor <- cor(arrest_scaled)
+```
+
+Next, we need to show the following proportionality: 
+
+$$
+1 - rji = dist(ij)^2
+$$
+
+Squared euclidean distance
+```{r}
+distance_squared <- (df_dist)^2
+head(distance_squared) 
+```
+
+1 - correlation 
+```{r}
+subtract_one <- function(df) {
+  df - 1
+}
+
+# Call the function on your data frame
+df_cor_subtracted <- subtract_one(df_cor)
+
+# inspect 
+head(df_cor_subtracted) 
+```
+
+
+
+```{r}
+# Calculate the correlation matrix
+corr_matrix <- cor(arrest_scaled)
+
+# Calculate the squared Euclidean distance matrix
+dist_matrix <- dist(arrest_scaled, method = "euclidean")^2
+
+# Calculate the proportionality constant
+prop_const <- sum(dist_matrix) / sum(1 - corr_matrix)
+
+# Calculate the left and right sides of the equation
+left_side <- 1 - corr_matrix
+right_side <- prop_const * dist_matrix
+
+# Check if the two sides are equal
+all.equal(left_side, right_side, tolerance = 1e-10)
+```
+
+Hmm... that's not right. 
 
 
 #### 2. Section 3.3 on page 65 gives a formula for calculating the proportion of the total variation (PTV) explained by the principal components. We also saw that the PTV can be obtained using the sdev output of the prcomp function. Calculate the PTV using these two approaches – they should deliver the same results.
