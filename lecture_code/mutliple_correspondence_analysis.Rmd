@@ -1,0 +1,210 @@
+---
+title: "multiple correspondence analysis (MCA)"
+author: "Gian Zlupko"
+date: "2023-04-19"
+output: html_document
+---
+
+```{r, message = F}
+library(tidyverse)
+```
+
+
+
+
+Multiple correspondence analysis (MCA) is used when the variables are categorical. It is like a PCA for categorical data. 
+
+
+Load data sets from local directory
+```{r}
+
+# manually select txt file from other directory 
+food <- read.delim(file.choose())
+cars <- read.delim("cars.txt", row.names = NULL)
+bachelors <- read.delim(file.choose())
+crime <- read.delim(file.choose()) 
+
+# store csv in directory for later use
+#write.csv(food, "food_data.csv")
+#write.csv(bachelors, "bachelor.csv")
+#write.csv(crime, "crime.csv")
+#write.csv(cars, "cars.csv")
+
+# load data sets 
+
+cars <- read.csv('cars.csv') 
+crime <- read.csv('crime.csv')
+bachelor <- read.csv('bachelor.csv')
+food <- read.csv('food_data.csv')
+
+```
+
+
+Cars data set 
+```{r}
+head(cars) 
+# for loop to convert all columns to factor type 
+for (i in 1:ncol(cars)) { 
+  
+  cars[, i] = as.factor(cars[, i])
+  
+}
+
+```
+
+Apply MCA
+```{r}
+mca_cars <- MCA(cars) 
+mca_cars$eig
+plot(mca_cars) 
+
+categories_cars <- apply(cars_cat, 2, function(x) nlevels(as.factor(x)))
+```
+
+
+```{r}
+# data frames for ggplot
+mca_cars_vars_df = data.frame(mca_cars$var$coord, Variable = rep(names(categories_cars), 
+    categories_cars))
+
+mca_cars_obs_df = data.frame(mca_cars$ind$coord)
+
+# plot of variable categories
+ggplot(data = mca_cars_vars_df, aes(x = Dim.1, y = Dim.2, label = rownames(mca1_vars_df))) + 
+    geom_hline(yintercept = 0, colour = "gray70") + geom_vline(xintercept = 0, 
+    colour = "gray70") + geom_text(aes(colour = Variable)) + ggtitle("MCA plot of variables using R package FactoMineR")
+```
+
+
+
+
+
+#### Homoegeneity Analysis
+
+Using the `Homals` package. 
+
+Similar to CA but provides optimal scaling for different types of variables so that you can do a dim reduction with data that are measured on different scales (e.g. categorial, continuous, etc) 
+
+```{r}
+library(homals) 
+require(homals, quietly = T)
+mca5 = homals(newtea, ndim = 5, level = "nominal")
+
+mca5
+```
+
+```{r}
+tea
+```
+
+
+
+
+
+
+#### MCA Tutorial 
+
+The following MCA tutorial follows the demonstration provided in the following link on RPubs: 
+https://rpubs.com/gaston/MCA
+
+
+Load FactoMineR package and tea data set from the package.
+```{r}
+library(FactoMineR) 
+data(tea) 
+head(tea) 
+dim(tea) 
+```
+
+
+```{r}
+# select these columns
+newtea = tea[, c("Tea", "How", "how", "sugar", "where", "always")]
+
+cats = apply(newtea, 2, function(x) nlevels(as.factor(x)))
+# see how many categories we have within each variable 
+cats
+```
+
+
+Apply MCA 
+```{r}
+# apply MCA
+mca1 = MCA(newtea, graph = FALSE)
+
+# table of eigenvalues
+mca1$eig
+```
+
+
+The largest eigenvalue is 1 when dealing with categorical data because, 
+
+when we look at the loadings corresponding to the first dimension, they will all be either positive or negative 1. 
+
+
+
+```{r}
+# column coordinates
+head(mca1$var$coord)
+```
+
+
+
+```{r}
+# data frames for ggplot
+mca1_vars_df = data.frame(mca1$var$coord, Variable = rep(names(cats), 
+    cats))
+mca1_obs_df = data.frame(mca1$ind$coord)
+
+# plot of variable categories
+ggplot(data = mca1_vars_df, aes(x = Dim.1, y = Dim.2, label = rownames(mca1_vars_df))) + 
+    geom_hline(yintercept = 0, colour = "gray70") + geom_vline(xintercept = 0, 
+    colour = "gray70") + geom_text(aes(colour = Variable)) + ggtitle("MCA plot of variables using R package FactoMineR")
+```
+
+We can also superimpose a graphic display of both the observations and the categories. Moreover, since some individuals will be overlapped, we can use density curves to see those zones that are highly concentrated.
+
+
+```{r}
+# MCA plot of observations and categories
+ggplot(data = mca1_obs_df, aes(x = Dim.1, y = Dim.2)) + geom_hline(yintercept = 0, 
+    colour = "gray70") + geom_vline(xintercept = 0, colour = "gray70") + geom_point(colour = "gray50", 
+    alpha = 0.7) + geom_density2d(colour = "gray80") + geom_text(data = mca1_vars_df, 
+    aes(x = Dim.1, y = Dim.2, label = rownames(mca1_vars_df), colour = Variable)) + 
+    ggtitle("MCA plot of variables using R package FactoMineR") + scale_colour_discrete(name = "Variable")
+```
+Interpretation: looking at the colors, we can see that some of the variables have high values on either of the dimensions/factors. The green 'other' variable is high on Dim2 and the variable 'tea shop' is very high on Dim1. 
+
+
+
+
+```{r}
+# default biplot in FactoMineR
+plot(mca1)
+```
+
+
+
+
+
+
+
+
+Variable Clustering 
+
+```{r}
+library(ClustOfVar) 
+
+str(food) 
+food_num = food %>% select(-c(Workertype, X, ID)) 
+
+food_var_cluster <- hclustvar(food_num) 
+plot(food_var_cluster) 
+
+```
+
+
+
+
+
+
