@@ -1,0 +1,113 @@
+---
+title: "hw8"
+author: "Gian Zlupko"
+date: "2023-04-21"
+output: html_document
+---
+
+
+Load data sets
+```{r, message = F}
+library(tidyverse)
+cars <- read.csv('cars.csv') 
+crime <- read.csv('crime.csv')
+bachelor <- read.csv('bachelor.csv')
+food <- read.csv('food_data.csv')
+```
+
+
+
+
+
+## Exercise 1
+
+#### *Do a correspondence analysis for the car-ratings (file cars.txt). Explain how this table can be considered as a contingency table.The data are averaged ratings for 24 car types from a sample of 40 persons. The marks range from 1 (very good) to 6 (very bad). *
+
+```{r, message = F}
+library(FactoMineR) 
+library(ca) 
+library(factoextra) 
+
+# subset and clean the data 
+cars_sub = cars %>%
+  rename(model = row.names) %>% 
+  mutate(model = as.factor(model), 
+         Type = as.factor(Type)) %>%
+  select(-X) 
+head(cars_sub) 
+
+# fit MCA
+mca_cars <- MCA(cars)
+```
+
+
+This table can be considered a contingency table because the data that are shown for the rating variables can be considered frequencies. The data are average responses to a set of ratings that range from 1 to 6. The scores are thus the average of the individual ratings that were collected by researchers for each of the 24 cars. 
+
+
+## Exercise 2
+
+#### *Write an R function to compute the chi-square statistic of independence. Test the null using for the bachelor data (file bachelors.txt). The data consists of observations of 202,100 bachelors from France and give the frequencies for different sets of modalities classified into regions. The variables (modalities) are: A=Philosophy-Letters, B=Economics and Social Sciences, C=Mathematics and Physics, D=Mathematics and Natural Sciences, E=Mathematics and Techniques, F=Industrial Techniques, G=Economic Techniques, H Computer Techniques.*
+
+
+First, I write a custom function to compute the chi-square statistic of independence: 
+```{r}
+
+custom_chi <- function(x) { 
+  
+  row_sums = rowSums(x)
+  col_sums = colSums(x)
+  total_sum = sum(x)
+  expect_freq = outer(row_sums, col_sums)/ total_sum
+  # calculate chi-square
+  chi_square = sum((x - expect_freq)^2 / expect_freq)
+  # returns the chi-square test statistic 
+  # degrees of freedom and p-value 
+  df = (nrow(x) - 1)*(ncol(x)-1)
+  p_value = 1- pchisq(chi_square, df)
+  test_result = list(chi_square = chi_square, df = df, p_value = p_value)
+  return(test_result)
+  }
+
+```
+
+Next, I use the custom chi-square function on the bachelor data
+```{r}
+
+# create a subset to apply the function to
+bachelor_sub <- bachelor %>% 
+  select(A:H)
+
+# print out the test of independence results using the custom function
+custom_chi(bachelor_sub)
+
+```
+
+
+The test indicates that the variables are not independent.
+
+
+
+
+## Exercise 3
+
+*Do correspondence analysis of the U.S. crime data (file UScrime.txt), and determine the absolute contributions for the first three axes. How can you interpret the third axis? Try to identify the states with one of the four regions to which it belongs. Do you think the four regions have a different behavior with respect to crime? This is a data set consisting of 50 measurements of 7 variables. It contains the number of crimes in the 50 states of the U.S. classified according to 7 categories. Region is 1 for Northeast, 2 for Midwest, 3 for South and 4 for West. Division is 1 for New England, 2 for Mid Atlantic, 3 for E N central, 4 for W N Central, 5 for S Atlantic, 6 for E S Central, 7 for W S Central, 8 for Mountain and 9 for Pacific.*
+
+
+
+
+
+## Exercise 4
+
+*Consider the food data (file food.txt). Given that all of the variables are measured in the same units (dollars), explain how this table can be considered as a contingency table. Perform a correspondence analysis and compare the results to those obtained with the PCA analysis of the correlation matrix. The data set consists of the average expenditures on food for several different types of families (manual workers = MA, employees = EM, managers = CA) with different numbers of children (2,3,4 or 5 children).*
+
+```{r}
+head(food) 
+```
+
+
+
+
+
+
+
+
