@@ -1,0 +1,129 @@
+---
+title: "hw9"
+author: "Gian Zlupko"
+date: "2023-04-26"
+output: html_document
+---
+
+### HUDM 6122 HW9 
+#### Gian Zlupko 
+
+Exercises 7.1, 7.2 and 7.3 on pages 223-224.
+
+
+
+
+*#### 7.1 The matrix below shows the correlations between ratings on nine statements about pain made by 123 people suffering from extreme pain. Each statement was scored on a scale from 1 to 6, ranging from agreement to disagreement.*
+
+*Fit a correlated two-factor model in which questions 1,3,4, and 8 are assumed to be indicators of the latent variable Doctor’s Responsibility and questions 2,5,6, and 7 are assumed to be indicators of the latent variable Patient’s Responsibility. Find a 95% confidence interval for the correlation between the two latent variables.*
+
+
+Load in data manually 
+
+```{r}
+cor_mat = matrix(c(1.00, -.04, .61, .45, .03, -.29, -.30, .45, .30, 
+         -.04, 1.00, -.07, -.12, .49, .43, .30, -.31, -.17, 
+         .61, -.07, 1.00, .59, .03, -.13, -.24, .59, .32, 
+         .45, -.12, .59, 1.00, -.08, -.21, -.19, .63, .37, 
+         .03, .49, .03, -.08, 1.00, .47, .41, -.14, -.24, 
+         -.29, .43, -.13, -.21, .47, 1.00, .63, -.13, -.15, 
+         -.3, .3, -.24, -.19, .41, .63, 1.00, -.26, -.29, 
+         .45, -.31, .59, .63, -.14, -.13, -.26, 1.00, .40, 
+         .30, -.17, .32, .37, -.24, -.15, -.29, .40, 1.00), nrow = 9, ncol = 9)
+
+cor_mat
+
+rownames(cor_mat) <- c("item1", "item2", 
+                            "item3", "item4",
+                            "item5", "item6", "item7", "item8", "item9")
+colnames(cor_mat) <- c("item1", "item2", 
+                            "item3", "item4",
+                            "item5", "item6", "item7", "item8", "item9")
+cor_mat
+```
+
+
+Fit the CFA model as specified by the instructions in the problem
+
+```{r, message = F}
+library(lavaan) 
+
+# model specification 
+mod1 <- ' 
+doc_responsibility =~ item1 + item3 + item4 + item8 
+pat_responsibility =~ item2 + item5 + item6 + item7 ' 
+
+# fit CFA model 
+mod1_fit <- cfa(mod1, sample.cov = cor_mat, sample.nobs = 123) 
+
+# inspect standardized item loadings
+```
+
+The correlation between the two factors is r = -.305, which we can see above in the model summary output, under covariances, in the Std.lv column.
+
+Next, while the question does not ask us to, we can inspect the model fit with function below: 
+```{r}
+fitMeasures(mod1_fit)
+```
+
+Results revealed the following fit statistics: 
+
+- Chi-Square: 63.75
+- Chi-square p-value: 0.00
+- CFI: 0.87
+- TLI: 0.81
+- RMSEA: 0.138 [0.10, .17]
+- SRMR: .077
+
+First, the results show that chi-square is significantly large, and the associated p-value is small, leading us to reject the null that sigma and the sample covariance matrix are equivalent. Basically, this is an indication that the conceptual model does not adequately represent the relationships in the data. Next, we see that the fit statistics are sub-optimal. Specifically, CFI, RMSEA and SRMR are all below their recommended cut-off values (Hu & Bentler, 1999; Kline, 2009). Thus, each of these outputs indicates that the model fits OK but not that well. 
+
+
+Finally, for fun, we can plot the path diagram below using the `semPlots` package and can ask for the standardized parameter estimates. 
+```{r, message = F}
+library(semPlot) 
+
+semPaths(object = mod1_fit, what = "paths", whatLabels = "std") 
+```
+
+
+*#### Ex. 7.2 For the stability of alienation example, fit the model in which the measurement errors for anomia in 1967 and anomia in 1971 are allowed to be correlated.*
+
+First, I load the data, which is provided in the chapter demo:
+
+Note the data that is provided in the chapter demo does not have all of the variables that are shown in the SEM pictured on pg. 220 of the book (yet again an issue with the book!) We can simply run a SEM with the variables given and still provide correlated errors (correlated residuals) for the anomia 1967 and anomia 1971 variables. 
+
+```{r}
+alienation <- matrix(c(11.839, 6.947, 6.819, 4.783, -3.834, -21.899, 6.947, 9.364, 5.091, 5.028, -3.889, -18.831, 6.819, 5.091,12.532, 7.495, -3.841, -21.748, 4.783, 5.028, 7.495, 9.986, -3.625, -18.775, -3.834,-3.889,-3.841,-3.625,  9.60,   35.522, -21.899,-18.831,-21.748,-18.775,35.522,450.283), ncol = 6, byrow = TRUE)
+
+rownames(alienation) <- colnames(alienation) <- c("Anomia67", "Powles67", "Anomia71", "Powles71", "Educ", "SEI")
+
+# inspecct the data 
+alienation
+```
+
+
+Next, I specify the SEM model below - also note, these are all manifest variables (no latent variable) as the data that was provided by the book did not provide item-level data.
+
+```{r}
+
+alien_mod <- '  
+
+alienation67 =~ anomia
+
+
+
+```
+
+
+
+
+
+
+
+
+
+```{r, message = F}
+library(MVA)
+demo("Ch-SEM") ### Structural Equation Models
+```
+
