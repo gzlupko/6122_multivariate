@@ -97,33 +97,184 @@ alienation <- matrix(c(11.839, 6.947, 6.819, 4.783, -3.834, -21.899, 6.947, 9.36
 
 rownames(alienation) <- colnames(alienation) <- c("Anomia67", "Powles67", "Anomia71", "Powles71", "Educ", "SEI")
 
-# inspecct the data 
+# inspect the data 
 alienation
 ```
 
 
-Next, I specify the SEM model below - also note, these are all manifest variables (no latent variable) as the data that was provided by the book did not provide item-level data.
+Next, I specify the SEM model below. 
 
 ```{r}
 
 alien_mod <- '  
+# measument portion of SEM
+Alienation67 =~ Anomia67  + Powles67
+Alienation71 =~ Powles71 + Anomia71
 
-alienation67 =~ anomia
+# paths 
 
+Alienation71 ~ Alienation67 
 
+# correlated residual
+Anomia67 ~~ Anomia71
+
+' 
+
+# fit the SEM model on the covariance data
+sem1_fit <- lavaan::sem(model = alien_mod, 
+                        sample.cov = alienation, sample.nobs = 932)
+
+# inspect model fit statistics and output 
+summary(sem1_fit, standardized = T)
 
 ```
 
 
 
+Plot the path diagram of the model
 
-
-
-
-
-
-```{r, message = F}
-library(MVA)
-demo("Ch-SEM") ### Structural Equation Models
+```{r}
+semPaths(object = sem1_fit, 
+         whatLabels = "std")
 ```
+
+The path diagram provided by the `semPaths` library is not very easy to read in this case, but in the image, we can see the correlated residuals for the
+
+
+
+*#### Ex. 7.3 Meyer and Bendig (1961) administered the five Thurstone Primary Mental Ability tests, verbal meaning (V), space (S), reasoning (R), numerical (N), and word fluency (W), to 49 boys and 61 girls in grade 8 and again three and a half years later in grade 11. The observed correlation matrix is shown below. Fit a single-factor model to the correlations that allows the factor at time one to be correlated with the factor at time two.*
+
+
+Load the data 
+
+```{r}
+
+thurstone <- " 
+1
+0.37 1
+0.42  0.33 1
+0.53  0.14 0.38  1
+0.38  0.10  0.20  0.24 1
+0.81  0.34  0.49  0.58 0.32  1
+0.35  0.65 0.20 -0.04 0.11  0.34  1
+0.42  0.32 0.75  0.46  0.26 0.46 0.18 1
+0.40  0.14 0.39  0.73  0.19 0.55 0.06 0.54 1
+0.24  0.15 0.17  0.15  0.43 0.24 0.15 0.20  0.16 1
+"
+
+
+thurstone_cov_mat <- getCov(thurstone, 
+                            names = c("V1", "S1", "R1", "N1", "W1", 
+                                      "V2", "S2", "R2", "N2", "W2"))
+
+thurstone_cov_mat
+```
+
+
+
+
+The specification for a single factor model (also known as a unidimensional model) is as follows: 
+```{r}
+
+single_factor <- '
+factor1 =~ V1 + S1 + R1 + N1 + W1 + V2 + S2 + R2 + N2 + W2
+
+# correlated residuals
+V1 ~~ V2
+S1 ~~ S2
+R1 ~~ R2
+N1 ~~ N2
+W1 ~~ W2
+
+'
+
+# fit the single factor model
+thurstone_cfa_fit <- cfa(model = single_factor,
+                         sample.cov = thurstone_cov_mat, 
+                         sample.nobs = 110)
+
+# inspect the model output
+summary(thurstone_cfa_fit, standardized = TRUE, fit.measure = TRUE) 
+
+```
+
+We can see from the fit statistics that the model fits fairly well according to conventional cut-off recommendations (Hu & Bentler, 1999; Kline, 2009). RMSEA is nearing the high side by the 95% CI for RMSEA falls within the recommended range. 
+
+- CFI: .95
+- TLI: .92
+- RMSEA: .08
+- SRMR: .06
+
+Chi square is significant, suggestion that the model does not exactly reproduce the covariances in the data, but overall the model fits well. 
+
+```{r}
+semPaths(thurstone_cfa_fit, what = "std") 
+```
+
+
+We can see from the path diagram that the items at Time 1 (or 8th grade) were allowed to correlate with the items at Time 2 (11th grade). This likely helped with model fit. For example, we can fit a similar model below but without the correlated residuals that the textbook asked for and compare the fit of each model. 
+
+Model with no correlated residuals: 
+```{r}
+single_factor_no_corr <- '
+factor1 =~ V1 + S1 + R1 + N1 + W1 + V2 + S2 + R2 + N2 + W2
+
+# correlated residuals - none
+'
+
+# fit the single factor model
+thursone2 <- cfa(model = single_factor_no_corr,
+                         sample.cov = thurstone_cov_mat, 
+                         sample.nobs = 110)
+
+# inspect the model output
+summary(thursone2, standardized = TRUE, fit.measure = TRUE) 
+```
+
+
+As expected, we can see that the model without correlated residuals fit much worse than the first model, which relaxed this contraint. 
+
+
+Finally, while the chapter asks for 1 factor model, we can also explore fitting a two factor model, one for time 1 and time 2, and we can compare this model's fit to the model that the authors requested. 
+
+Two factor model: 
+
+```{r}
+two_factor <- '
+factor1 =~ V1 + S1 + R1 + N1 + W1 
+factor2 =~ V2 + S2 + R2 + N2 + W2
+
+# correlated residuals
+V1 ~~ V2
+S1 ~~ S2
+R1 ~~ R2
+N1 ~~ N2
+W1 ~~ W2
+
+'
+
+# fit the single factor model
+two_factor_fit <- cfa(model = two_factor,
+                         sample.cov = thurstone_cov_mat, 
+                         sample.nobs = 110)
+
+# inspect the model output
+summary(two_factor_fit, standardized = TRUE, fit.measure = TRUE) 
+```
+
+```{r}
+semPaths(two_factor_fit, what = "std") 
+```
+
+
+
+This model arguably fits better than the first, single factor model. We can test whether one model fits better than the other with a chi-square difference test:
+
+```{r}
+lavTestLRT(thurstone_cfa_fit, two_factor_fit) 
+```
+
+The test is marginally significant but technically the difference in chi-square between the models is not significant at the .05 level, nor is the actual difference in chi-square very large (3.61). Thus, the researcher should choose the model that best suits their theoretical understanding of the constructs. 
+
+
 
