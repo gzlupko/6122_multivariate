@@ -6,9 +6,11 @@ output: html_document
 ---
 
 Libraries used. 
-```{r}
+```{r, message = F}
 library(nlme) 
 library(lattice) 
+library(tidyverse)
+library(lme4) 
 ```
 
 
@@ -182,11 +184,58 @@ summary(lm(bdi ~ time + treatment + length + subject +
 ```
 
 
+#### *Ex. 8.4 Construct a plot of the mean profiles of the two treatment groups in the Beat the Blues study showing also the predicted mean profiles under the model used in the chapter. Repeat the exercise with a model that includes only a time effect.*
 
-
-Chapter demos to load the data
 ```{r}
-library(MVA) 
-demo("Ch-LME")
+boxplot(len ~ dose, data = ToothGrowth, frame = FALSE,
+        horizontal = TRUE)
+head(long_blues) 
+```
+
+
+Next, I subset the data into two separate data frames that are broken out by the treatment type. The data for each treatment type are plotted in boxplots, recreating the two plots that appear in the chapter. 
+```{r}
+
+tau <- long_blues %>%
+  filter(treatment == "TAU") 
+btheb = long_blues %>%
+  filter(treatment == "BtheB") 
+
+par(mfrow = c(1, 2))
+
+boxplot(bdi ~ time, data = tau, main = "TAU", xlab = "Time (Months)") 
+boxplot(bdi~ time, data = btheb, main = "BtheB", xlab = "Time (Months)")
+```
+
+
+#### *Ex. 8.5 Investigate whether there is any evidence of an interaction between treatment and time for the Beat the Blues data.*
+
+To see if there is an interaction between time and treatment, we can fit two models and compare their outputs. The first model is a simple multiple regression with no random effect
+
+```{r}
+# remove rows with missing values 
+blues_clean = na.omit(long_blues) 
+
+# first model: no interaction term: 
+blues_mod1 <- lm(bdi ~ time + treatment, data = blues_clean) 
+
+# second model: interaction term: 
+blues_mod2 <- lmer(bdi ~ time + treatment + time*treatment + (1 | subject), 
+                  data = blues_clean) 
+```
+
+
+Compare the models: 
+```{r}
+anova(blues_mod2, blues_mod1)  
+```
+
+
+The results show that there is a significant difference in chi-square and that the chi-square value is lower for the model with the interaction term. These results suggest that the model with the interaction term fits the data better. 
+
+Chapter demos used to inspect how the authors loaded the data and built the models that were extended upon in this assignment. 
+```{r}
+#library(MVA) 
+#demo("Ch-LME")
 ```
 
